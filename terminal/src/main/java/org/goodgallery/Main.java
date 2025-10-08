@@ -16,20 +16,15 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 public class Main {
 
   private static final Path GALLERY_PATH = Paths.get("./gallery");
 
+  @SuppressWarnings("resource")
   public static void main(String[] args) {
-    try {
-      GalleryInstance.init(GALLERY_PATH);
-    } catch (IOException e) {
-      System.err.println("Could not init Gallery instance.");
-      e.printStackTrace(System.err);
-      return;
-    }
-    Gallery gallery = GalleryInstance.get();
+    Gallery gallery = GalleryInstance.init(GALLERY_PATH);
     CommandDispatcher dispatcher = new CommandDispatcher();
 
     Command.builder("photos")
@@ -89,7 +84,7 @@ public class Main {
             .executes(context -> {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
-              gallery.updatePhotoProperty(photo, Properties.NAME_KEY, newName);
+              gallery.updateProperty(photo, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )
@@ -140,12 +135,13 @@ public class Main {
       .then(Argument.literal("list")
         .executes(context -> {
           context.out().printf("Albums (%d):%n", gallery.getAlbums().size());
-          for (Album album : gallery.getAlbums()) {
-            context.out().printf(" - %s%n", album.getName());
-            for (Photo photo : album.getPhotos()) {
-              context.out().printf("  * %s (%s)%n", photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName());
-            }
-          }
+          for (Album album : gallery.getAlbums())
+            context.out().printf(" - %s%n%s",
+              album.getName(),
+              album.getPhotos().stream()
+                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName()))
+                .collect(Collectors.joining("%n"))
+              );
         })
       )
       .then(Argument.literal("create")
@@ -163,7 +159,7 @@ public class Main {
             .executes(context -> {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
-              gallery.renameAlbum(album, newName);
+              gallery.updateProperty(album, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )

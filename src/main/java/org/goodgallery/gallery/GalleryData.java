@@ -4,19 +4,23 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.goodgallery.gallery.collections.AlbumCollection;
+import org.goodgallery.gallery.collections.GroupCollection;
+import org.goodgallery.gallery.collections.PhotoCollection;
+import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 public class GalleryData {
 
-  private static final Gson GSON = new GsonBuilder()
+  private final Gson GSON = new GsonBuilder()
     .setPrettyPrinting()
     .create();
 
@@ -35,32 +39,32 @@ public class GalleryData {
       save();
     } else
       this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
+
+    Runtime.getRuntime().addShutdownHook(new Thread(this::save));
   }
 
-  public Map<String, Group> getGroups(Map<String, Photo> photos) {
-    Map<String, Group> groups = new HashMap<>();
-
+  public void loadGroups(GroupCollection groups, PhotoCollection photos) {
     JsonObject groupsJson = json.getAsJsonObject("groups");
 
     for (String key : groupsJson.keySet()) {
-      JsonObject albumsJson = groupsJson.getAsJsonObject(key).getAsJsonObject("albums");
+      JsonObject groupJson = groupsJson.getAsJsonObject(key);
+      JsonObject albumsJson = groupJson.getAsJsonObject("albums");
 
       Album[] albums = new Album[albumsJson.size()];
       int i = 0;
       for (String albumKey : albumsJson.keySet()) {
+        JsonObject albumJson = albumsJson.getAsJsonObject(albumKey);
         JsonArray rawAlbumPhotos = albumsJson.getAsJsonObject(albumKey).getAsJsonArray("photos");
 
         Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
         for (int j = 0; j < rawAlbumPhotos.size(); j++)
-          albumPhotos[j] = photos.get(rawAlbumPhotos.get(j).getAsString());
+          albumPhotos[j] = photos.getPhoto(rawAlbumPhotos.get(j).getAsString());
 
-        albums[i++] = new Album(albumKey, albumPhotos);
+        albums[i++] = new Album(UUID.fromString(albumKey), albumJson, albumPhotos);
       }
 
-      groups.put(key, new Group(key, albums));
+      groups.add(new Group(UUID.fromString(key), groupsJson, albums));
     }
-
-    return groups;
   }
 
   public void addGroup(Group group) {
@@ -69,50 +73,34 @@ public class GalleryData {
     JsonObject groupJson = new JsonObject();
     JsonArray albumArray = new JsonArray();
     for (Album album : group.getAlbums())
-      albumArray.add(album.getName());
+      albumArray.add(album.toString());
     groupJson.add("albums", new JsonObject());
 
-    groups.add(group.getName(), groupJson);
+    groups.add(group.toString(), groupJson);
     save();
   }
 
   public boolean hasGroup(Group group) {
-    return json.getAsJsonObject("groups").has(group.getName());
+    return json.getAsJsonObject("groups").has(group.toString());
   }
 
   public void deleteGroup(Group group) {
-    json.getAsJsonObject("groups").remove(group.getName());
+    json.getAsJsonObject("groups").remove(group.toString());
     save();
   }
 
-  public void moveAlbum(Album album, @Nullable Group group) {
-    JsonObject originalAlbumParent = findAlbumParent(album);
-    JsonObject albumJson = originalAlbumParent.getAsJsonObject(album.getName());
-    JsonObject newAlbumParent = group == null ?
-      json.getAsJsonObject("albums") :
-      json.getAsJsonObject("groups").getAsJsonObject(group.getName()).getAsJsonObject("albums");
-
-    originalAlbumParent.remove(album.getName());
-    newAlbumParent.add(album.getName(), albumJson);
-
-    save();
-  }
-
-  public Map<String, Album> getAlbums(Map<String, Photo> photos) {
-    Map<String, Album> albums = new HashMap<>();
-
+  public void loadAlbums(AlbumCollection albums, PhotoCollection photos) {
     JsonObject albumsJson = json.getAsJsonObject("albums");
     for (String key : albumsJson.keySet()) {
-      JsonArray rawAlbumPhotos = albumsJson.getAsJsonObject(key).getAsJsonArray("photos");
+      JsonObject albumJson = albumsJson.getAsJsonObject(key);
+      JsonArray rawAlbumPhotos = albumJson.getAsJsonArray("photos");
 
       Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
       for (int i = 0; i < rawAlbumPhotos.size(); i++)
-        albumPhotos[i] = photos.get(rawAlbumPhotos.get(i).getAsString());
+        albumPhotos[i] = photos.getPhoto(rawAlbumPhotos.get(i).getAsString());
 
-      albums.put(key, new Album(key, albumPhotos));
+      albums.add(new Album(UUID.fromString(key), albumJson, albumPhotos));
     }
-
-    return albums;
   }
 
   public void addAlbum(Album album, Photo... photos) {
@@ -124,72 +112,36 @@ public class GalleryData {
       photosArray.add(photo.getFileName());
     albumJson.add("photos", photosArray);
 
-    albums.add(album.getName(), albumJson);
+    albums.add(album.toString(), albumJson);
     save();
   }
 
-  public boolean hasAlbum(Album album) {
-    return json.getAsJsonObject("albums").has(album.getName());
-  }
+  public void moveAlbum(Album album, @Nullable Group group) {
+    if (!hasAlbum(album))
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
+    if (group != null && !hasGroup(group))
+      throw new IllegalStateException("Group \"%s\" does not exist".formatted(group.toString()));
 
-  public void renameAlbum(Album album, String newName) {
-    JsonObject albumLocation = findAlbumParent(album);
-    JsonObject albumJson = albumLocation.getAsJsonObject(album.getName());
+    JsonObject originalAlbumParent = findAlbumParent(album.toString());
+    JsonObject albumJson = originalAlbumParent.getAsJsonObject(album.toString());
+    JsonObject newAlbumParent = group == null ?
+      json.getAsJsonObject("albums") :
+      json.getAsJsonObject("groups").getAsJsonObject(group.toString()).getAsJsonObject("albums");
 
-    JsonObject albums = json.getAsJsonObject("albums");
+    originalAlbumParent.remove(album.toString());
+    newAlbumParent.add(album.toString(), albumJson);
 
-    albums.add(newName, albumJson);
-    albumLocation.remove(album.getName());
-
-    save();
-  }
-
-  public void deleteAlbum(Album album) {
-    json.getAsJsonObject("albums").remove(album.getName());
-    save();
-  }
-
-  public Map<String, Photo> getPhotos() {
-    Map<String, Photo> photos = new HashMap<>();
-    JsonObject photosJson = json.getAsJsonObject("photos");
-
-    for (String key : photosJson.keySet()) {
-      Path path = this.path.getParent().resolve(key);
-      JsonObject photoJson = photosJson.getAsJsonObject(key);
-      photos.put(key, new Photo(path, photoJson));
-    }
-
-    return photos;
-  }
-
-  public void addPhoto(Photo photo) {
-    JsonObject photoJson = new JsonObject();
-    photo.getProperties().getProperties().forEach(property -> property.appendJson(photoJson));
-    json.getAsJsonObject("photos").add(photo.getFileName(), photoJson);
-    save();
-  }
-
-  public void updatePhotoProperty(Photo photo, PropertyInstance<?> property) {
-    property.appendJson(json.getAsJsonObject("photos").getAsJsonObject(photo.getFileName()));
-  }
-
-  public boolean hasPhoto(Photo photo) {
-    return json.getAsJsonObject("photos").has(photo.getFileName());
-  }
-
-  public void deletePhoto(Photo photo) {
-    json.getAsJsonObject("photos").remove(photo.getFileName());
     save();
   }
 
   public void addPhotoToAlbum(Photo photo, Album album) {
     if (!hasPhoto(photo))
-      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
+      throw new IllegalStateException("Photo \"%s\" does not exist".formatted(photo.toString()));
     if (!hasAlbum(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
 
     json.getAsJsonObject("albums")
-      .getAsJsonObject(album.getName())
+      .getAsJsonObject(album.toString())
       .getAsJsonArray("photos")
       .add(photo.getFileName());
 
@@ -198,12 +150,12 @@ public class GalleryData {
 
   public void removePhotoFromAlbum(Photo photo, Album album) {
     if (!hasPhoto(photo))
-      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
+      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.toString()));
     if (!hasAlbum(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
 
     JsonArray photos = json.getAsJsonObject("albums")
-      .getAsJsonObject(album.getName())
+      .getAsJsonObject(album.toString())
       .getAsJsonArray("photos");
 
     for (int i = 0; i < photos.size(); i++)
@@ -211,6 +163,45 @@ public class GalleryData {
         photos.remove(i);
 
     save();
+  }
+
+  public boolean hasAlbum(Album album) {
+    return findAlbum(album.toString()) != null;
+  }
+
+  public void deleteAlbum(Album album) {
+    json.getAsJsonObject("albums").remove(album.toString());
+    save();
+  }
+
+  public void loadPhotos(PhotoCollection photos) {
+    JsonObject photosJson = json.getAsJsonObject("photos");
+
+    for (String key : photosJson.keySet()) {
+      JsonObject photoJson = photosJson.getAsJsonObject(key);
+
+      photos.add(new Photo(UUID.fromString(key), photoJson));
+    }
+  }
+
+  public void addPhoto(Photo photo) {
+    JsonObject photoJson = new JsonObject();
+    photo.getProperties().getProperties().forEach(property -> property.appendJson(photoJson));
+    json.getAsJsonObject("photos").add(photo.toString(), photoJson);
+    save();
+  }
+
+  public boolean hasPhoto(Photo photo) {
+    return json.getAsJsonObject("photos").has(photo.toString());
+  }
+
+  public void deletePhoto(Photo photo) {
+    json.getAsJsonObject("photos").remove(photo.toString());
+    save();
+  }
+
+  public void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property) {
+    property.appendJson(findProperties(propertyHolder));
   }
 
   private void save() {
@@ -221,21 +212,43 @@ public class GalleryData {
     }
   }
 
-  private JsonObject findAlbumParent(Album album) {
+  private JsonObject findProperties(@NotNull PropertyHolder propertyHolder) {
+    String uniqueId = propertyHolder.getUniqueId().toString();
+    return switch (propertyHolder) {
+      case Photo _ -> findPhoto(uniqueId);
+      case Album _ -> findAlbum(uniqueId);
+      case Group _ -> findGroup(uniqueId);
+      default -> new JsonObject();
+    };
+  }
+
+  private JsonObject findGroup(String uniqueId) {
+    return json.getAsJsonObject("groups").getAsJsonObject(uniqueId);
+  }
+
+  private @Nullable JsonObject findAlbumParent(String uniqueId) {
     JsonObject galleryAlbums = json.getAsJsonObject("albums");
 
-    if (galleryAlbums.has(album.getName()))
+    if (galleryAlbums.has(uniqueId))
       return galleryAlbums;
 
     JsonObject groups = json.getAsJsonObject("groups");
 
     for (String groupName : groups.keySet()) {
       JsonObject groupAlbums = groups.getAsJsonObject(groupName).getAsJsonObject("albums");
-      if (groupAlbums.has(album.getName()))
+      if (groupAlbums.has(uniqueId))
         return groupAlbums;
     }
 
-    throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
+    return null;
+  }
+
+  private JsonObject findAlbum(String uniqueId) {
+    return findAlbumParent(uniqueId).getAsJsonObject(uniqueId);
+  }
+
+  private JsonObject findPhoto(String uniqueId) {
+    return json.getAsJsonObject("photos").getAsJsonObject(uniqueId);
   }
 
 }

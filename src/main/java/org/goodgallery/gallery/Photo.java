@@ -2,51 +2,50 @@ package org.goodgallery.gallery;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
-import org.goodgallery.gallery.properties.PropertyKey;
+import org.goodgallery.gallery.properties.PropertyHolder;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 @Getter
-public class Photo {
+public class Photo implements PropertyHolder {
 
-  private final Path path;
+  private final UUID uniqueId;
   private final Properties properties;
 
-  Photo(Path path, JsonObject json) {
-    this.path = path;
+  Photo(UUID uniqueId, JsonObject json) {
+    this.uniqueId = uniqueId;
     this.properties = new PhotoProperties(this, json);
   }
 
-  Photo(Path path) {
-    this(path, null);
+  Photo(UUID uniqueId) {
+    this(uniqueId, null);
+  }
+
+  Photo() {
+    this(UUID.randomUUID());
+  }
+
+  public Path getPath() {
+    return getPropertyValue(Properties.PATH_KEY);
   }
 
   public String getFileName() {
-    return path.getFileName().toString();
-  }
-
-  public <T> T getPropertyValue(PropertyKey<T> key) {
-    T value = properties.getValue(key);
-    return value != null ? value : key.getDefaultValue(this);
+    return getPath().getFileName().toString();
   }
 
   @Override
   public String toString() {
-    return "%s".formatted(getFileName());
+    return uniqueId.toString();
   }
 
   static class PhotoProperties extends Properties {
 
-    private final Photo photo;
-
     PhotoProperties(Photo photo, JsonObject json) {
-      this.photo = photo;
-      register(json, NAME_KEY);
-    }
-
-    @Override
-    protected <T> void register(JsonObject json, PropertyKey<T> key) {
-      super.register(json, key, photo);
+      super(photo, json);
+      register(PATH_KEY);
+      register(NAME_KEY);
+      register(CREATION_TIMESTAMP_KEY);
     }
 
   }

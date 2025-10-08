@@ -4,7 +4,7 @@ import java.util.stream.Collectors;
 
 public class LiteralArgument extends AbstractArgument<String> {
 
-  LiteralArgument(String literal) {
+  protected LiteralArgument(String literal) {
     super(literal);
   }
 

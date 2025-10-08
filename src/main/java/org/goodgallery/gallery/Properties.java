@@ -1,43 +1,62 @@
 package org.goodgallery.gallery;
 
 import com.google.gson.JsonObject;
+import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Properties {
 
-  public static final PropertyKey<String> NAME_KEY = new PropertyKey<>("name", String.class,
-    (property, json) -> json.addProperty(property.key().getKey(), property.value()),
+  public static final PropertyKey<Path> PATH_KEY = new PropertyKey<>("path",
+    (property, json) -> json.addProperty(property.key().toString(), property.value().toString()),
+    json -> Path.of(json.getAsJsonObject("path").getAsString())
+  );
+  public static final PropertyKey<String> NAME_KEY = new PropertyKey<>("name",
+    (property, json) -> json.addProperty(property.key().toString(), property.value()),
     json -> json.getAsJsonObject("name").getAsString()
-  ).photoDefault(Photo::getFileName);
-  public static final PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp", Long.class,
-    (property, json) -> json.addProperty(property.key().getKey(), property.value()),
+  ).defaultProvider(propertyHolder -> {
+    Path path = propertyHolder.getPropertyValue(PATH_KEY);
+    return path == null ? null : path.getFileName().toString();
+  });
+  public static final PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp",
+    (property, json) -> json.addProperty(property.key().toString(), property.value()),
     json -> json.getAsJsonObject("creation_timestamp").getAsLong()
-  ).photoDefault(_ -> System.currentTimeMillis())
-    .albumDefault(_ -> System.currentTimeMillis())
-    .groupDefault(_ -> System.currentTimeMillis());
+  ).defaultProvider(propertyHolder -> {
+    Path path = propertyHolder.getPropertyValue(PATH_KEY);
 
-  private final Map<PropertyKey<?>, PropertyInstance<?>> properties = new HashMap<>();
+    if (path == null)
+      return System.currentTimeMillis();
 
-  protected abstract <T> void register(JsonObject json, PropertyKey<T> key);
+    try {
+      BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+      return attributes.creationTime().toInstant().toEpochMilli();
+    } catch (Throwable ignored){
+      return System.currentTimeMillis();
+    }
+  });
 
-  protected <T> void register(JsonObject json, PropertyKey<T> key, Photo photo) {
-    register(json, key, key.getDefaultValue(photo));
+  private final Map<PropertyKey<?>, PropertyInstance<?>> properties;
+  private final PropertyHolder propertyHolder;
+  private final JsonObject json;
+
+  protected Properties(PropertyHolder propertyHolder, JsonObject json) {
+    this.properties = new HashMap<>();
+    this.propertyHolder = propertyHolder;
+    this.json = json;
   }
 
-  protected <T> void register(JsonObject json, PropertyKey<T> key, Album album) {
-    register(json, key, key.getDefaultValue(album));
+  protected <T> void register(PropertyKey<T> key) {
+    register(key, key.getDefaultValue(propertyHolder));
   }
 
-  protected <T> void register(JsonObject json, PropertyKey<T> key, Group group) {
-    register(json, key, key.getDefaultValue(group));
-  }
-
-  private <T> void register(JsonObject json, PropertyKey<T> key, T defaultValue) {
+  private <T> void register(PropertyKey<T> key, T defaultValue) {
     T value = key.deserialize(json);
 
     if (value == null)
@@ -50,11 +69,12 @@ public abstract class Properties {
     return properties.values();
   }
 
+  @SuppressWarnings("unchecked")
   <T> PropertyInstance<T> get(PropertyKey<T> key) {
     return (PropertyInstance<T>) properties.get(key);
   }
 
-  <T> T getValue(PropertyKey<T> key) {
+  public <T> T getValue(PropertyKey<T> key) {
     return get(key).value();
   }
 

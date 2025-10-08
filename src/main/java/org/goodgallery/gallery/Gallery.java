@@ -1,6 +1,10 @@
 package org.goodgallery.gallery;
 
 import lombok.Getter;
+import org.goodgallery.gallery.collections.AlbumCollection;
+import org.goodgallery.gallery.collections.GroupCollection;
+import org.goodgallery.gallery.collections.PhotoCollection;
+import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
 import org.jetbrains.annotations.Nullable;
@@ -12,17 +16,18 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.UUID;
 
-public class Gallery implements AlbumCollection, PhotoCollection {
+@SuppressWarnings({"unused", "UnusedReturnValue"})
+public class Gallery {
 
   @Getter
   private final Path path;
   private final GalleryData galleryData;
 
-  private final Map<String, Photo> photos;
-  private final Map<String, Album> albums;
-  private final Map<String, Group> groups;
+  private final PhotoCollection photos;
+  private final AlbumCollection albums;
+  private final GroupCollection groups;
 
   Gallery(Path path) throws IOException {
     path = path.toAbsolutePath().normalize();
@@ -30,32 +35,42 @@ public class Gallery implements AlbumCollection, PhotoCollection {
       Files.createDirectory(path);
     this.galleryData = new GalleryData(path);
     this.path = path;
-    this.photos = galleryData.getPhotos();
-    this.albums = galleryData.getAlbums(photos);
-    this.groups = galleryData.getGroups(photos);
+
+    this.photos = new PhotoCollection();
+    galleryData.loadPhotos(photos);
+    this.albums = new AlbumCollection();
+    galleryData.loadAlbums(albums, photos);
+    this.groups = new GroupCollection();
+    galleryData.loadGroups(groups, photos);
   }
 
   public Collection<Group> getGroups() {
-    return Collections.unmodifiableCollection(groups.values());
+    return Collections.unmodifiableCollection(groups.getGroups());
+  }
+
+  public Group getGroup(UUID uniqueId) {
+    return groups.getGroup(uniqueId);
   }
 
   public Group getGroup(String name) {
-    return groups.get(name);
+    return groups.getGroup(name);
   }
 
   public boolean hasGroup(String name) {
-    return groups.containsKey(name);
+    return groups.has(name);
   }
 
   public Group createGroup(String name) {
-    Group group = new Group(name);
+    Group group = new Group();
     galleryData.addGroup(group);
-    groups.put(name, group);
+    updateProperty(group, Properties.NAME_KEY, name);
+    groups.add(group);
     return group;
   }
 
   public void deleteGroup(Group group) {
-    groups.remove(group.getName(), group);
+    galleryData.deleteGroup(group);
+    groups.remove(group);
   }
 
   public void moveAlbum(Album album, @Nullable Group group) {
@@ -66,59 +81,59 @@ public class Gallery implements AlbumCollection, PhotoCollection {
     galleryData.moveAlbum(album, group);
     if (group == null) {
       originalGroup.removeAlbum(album);
-      albums.put(album.getName(), album);
+      albums.add(album);
       return;
     }
 
     if (originalGroup == null)
-      albums.remove(album.getName(), album);
+      albums.remove(album);
     else
       originalGroup.removeAlbum(album);
     group.addAlbum(album);
   }
 
   private @Nullable Group findGroupWithAlbum(Album album) {
-    if (albums.containsKey(album.getName()))
+    if (albums.has(album))
       return null;
-    for (Group group : groups.values())
+    for (Group group : groups.getGroups())
       if (group.getAlbums().contains(album))
         return group;
     throw new IllegalArgumentException("Album " + album.getName() + " not found");
   }
 
   public Collection<Album> getAlbums() {
-    return Collections.unmodifiableCollection(albums.values());
+    return Collections.unmodifiableCollection(albums.getAlbums());
+  }
+
+  public Album getAlbum(UUID uniqueId) {
+    return albums.getAlbum(uniqueId);
   }
 
   public Album getAlbum(String name) {
-    return albums.get(name);
+    return albums.getAlbum(name);
   }
 
   public boolean hasAlbum(String name) {
-    return albums.containsKey(name);
+    return albums.has(name);
   }
 
   public Album createAlbum(String name, Photo... photos) {
-    Album album = new Album(name, photos);
+    Album album = new Album(photos);
     galleryData.addAlbum(album, photos);
-    albums.put(name, album);
+    updateProperty(album, Properties.NAME_KEY, name);
+    albums.add(album);
     return album;
-  }
-
-  public void renameAlbum(Album album, String newName) {
-    galleryData.renameAlbum(album, newName);
-    album.setName(newName);
   }
 
   public void deleteAlbum(Album album) {
     galleryData.deleteAlbum(album);
-    albums.remove(album.getName(), album);
+    albums.remove(album);
   }
 
   public void addPhotoToAlbum(Photo photo, Album album) {
-    if (!photos.containsValue(photo))
+    if (!photos.has(photo))
       throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
-    if (!albums.containsValue(album))
+    if (!albums.has(album))
       throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
 
     galleryData.addPhotoToAlbum(photo, album);
@@ -126,9 +141,9 @@ public class Gallery implements AlbumCollection, PhotoCollection {
   }
 
   public void removePhotoFromAlbum(Photo photo, Album album) {
-    if (!photos.containsValue(photo))
+    if (!photos.has(photo))
       throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
-    if (!albums.containsValue(album))
+    if (!albums.has(album))
       throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
 
     galleryData.removePhotoFromAlbum(photo, album);
@@ -136,15 +151,23 @@ public class Gallery implements AlbumCollection, PhotoCollection {
   }
 
   public Collection<Photo> getPhotos() {
-    return Collections.unmodifiableCollection(photos.values());
+    return Collections.unmodifiableCollection(photos.getPhotos());
+  }
+
+  public Photo getPhoto(UUID uniqueId) {
+    return photos.getPhoto(uniqueId);
+  }
+
+  public Photo getPhoto(Path path) {
+    return photos.getPhoto(path);
   }
 
   public Photo getPhoto(String name) {
-    return photos.get(name);
+    return photos.getPhoto(name);
   }
 
   public boolean hasPhoto(String name) {
-    return photos.containsKey(name);
+    return photos.has(name);
   }
 
   public Photo copyPhoto(Path originalPath, Album... albums) throws IOException {
@@ -158,9 +181,10 @@ public class Gallery implements AlbumCollection, PhotoCollection {
 
     Files.copy(originalPath, newPath, StandardCopyOption.COPY_ATTRIBUTES);
 
-    Photo photo = new Photo(newPath);
+    Photo photo = new Photo();
     galleryData.addPhoto(photo);
-    photos.put(photo.getFileName(), photo);
+    updateProperty(photo, Properties.PATH_KEY, newPath);
+    photos.add(photo);
 
     for (Album album : albums)
       addPhotoToAlbum(photo, album);
@@ -174,15 +198,15 @@ public class Gallery implements AlbumCollection, PhotoCollection {
     return photo;
   }
 
-  public <T> void updatePhotoProperty(Photo photo, PropertyKey<T> key, T value) {
-    PropertyInstance<T> property = photo.getProperties().set(key, value);
-    galleryData.updatePhotoProperty(photo, property);
-  }
-
   public void deletePhoto(Photo photo) throws IOException {
     galleryData.deletePhoto(photo);
-    photos.remove(photo.getFileName(), photo);
-    Files.deleteIfExists(photo.getPath());
+    photos.remove(photo);
+    Files.deleteIfExists(photo.getPropertyValue(Properties.PATH_KEY));
+  }
+
+  public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {
+    PropertyInstance<T> property = propertyHolder.getProperties().set(key, value);
+    galleryData.updateProperty(propertyHolder, property);
   }
 
 }

@@ -1,30 +1,40 @@
 package org.goodgallery.gallery;
 
-import lombok.AccessLevel;
+import com.google.gson.JsonObject;
 import lombok.Getter;
-import lombok.Setter;
+import org.goodgallery.gallery.properties.PropertyHolder;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-@Setter(AccessLevel.PACKAGE)
 @Getter
-public class Album implements PhotoCollection {
+public class Album implements PropertyHolder {
 
-  private String name;
+  private final UUID uniqueId;
+  private final Properties properties;
   private final Set<Photo> photos;
 
-  Album(String name) {
-    this.name = name;
+  Album(UUID uniqueId, JsonObject json, Photo... photos) {
+    this.uniqueId = uniqueId;
+    this.properties = new AlbumProperties(this, json);
     this.photos = new HashSet<>();
+    this.photos.addAll(Arrays.asList(photos));
   }
 
-  Album(String name, Photo... photos) {
-    this(name);
-    this.photos.addAll(Arrays.asList(photos));
+  Album(UUID uniqueId, Photo... photos) {
+    this(uniqueId, null, photos);
+  }
+
+  Album(Photo... photos) {
+    this(UUID.randomUUID(), photos);
+  }
+
+  public String getName() {
+    return properties.getValue(Properties.NAME_KEY);
   }
 
   public Collection<Photo> getPhotos() {
@@ -41,7 +51,17 @@ public class Album implements PhotoCollection {
 
   @Override
   public String toString() {
-    return name;
+    return uniqueId.toString();
+  }
+
+  static class AlbumProperties extends Properties {
+
+    AlbumProperties(Album album, JsonObject json) {
+      super(album, json);
+      register(NAME_KEY);
+      register(CREATION_TIMESTAMP_KEY);
+    }
+
   }
 
 }

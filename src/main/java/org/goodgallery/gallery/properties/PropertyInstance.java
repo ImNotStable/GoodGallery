@@ -15,7 +15,7 @@ public final class PropertyInstance<T> {
   public void appendJson(JsonObject json) {
     if (value == null)
       return;
-    key.getJsonAppender().accept(this, json);
+    key.serializer.accept(this, json);
   }
 
   public PropertyKey<T> key() {
