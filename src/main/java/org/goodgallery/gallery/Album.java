@@ -14,6 +14,10 @@ import java.util.UUID;
 @Getter
 public class Album implements PropertyHolder {
 
+  public static Album create(UUID uniqueId, JsonObject json, Photo... photos) {
+    return  new Album(uniqueId, json, photos);
+  }
+
   private final UUID uniqueId;
   private final Properties properties;
   private final Set<Photo> photos;

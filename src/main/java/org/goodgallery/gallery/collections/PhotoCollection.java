@@ -1,5 +1,6 @@
 package org.goodgallery.gallery.collections;
 
+import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Photo;
 
 import java.nio.file.Path;
@@ -18,6 +19,10 @@ public final class PhotoCollection {
     photosByUUID = new ConcurrentHashMap<>();
     photosByPath = new ConcurrentHashMap<>();
     photosByName = new ConcurrentHashMap<>();
+  }
+
+  public void createPhoto(UUID uniqueId, JsonObject json) {
+    add(Photo.create(uniqueId, json));
   }
 
   public void add(Photo photo) {

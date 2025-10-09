@@ -10,6 +10,10 @@ import java.util.UUID;
 @Getter
 public class Photo implements PropertyHolder {
 
+  public static Photo create(UUID uniqueId, JsonObject json) {
+    return new Photo(uniqueId, json);
+  }
+
   private final UUID uniqueId;
   private final Properties properties;
 

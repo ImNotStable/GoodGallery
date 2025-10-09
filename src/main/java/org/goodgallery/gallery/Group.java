@@ -14,6 +14,10 @@ import java.util.UUID;
 @Getter
 public class Group implements PropertyHolder {
 
+  public static Group create(UUID uniqueId, JsonObject json, Album... albums) {
+    return new Group(uniqueId, json, albums);
+  }
+
   private final UUID uniqueId;
   private final Properties properties;
   private final Set<Album> albums;

@@ -8,7 +8,6 @@ import org.goodgallery.gallery.properties.PropertyKey;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,10 +62,6 @@ public abstract class Properties {
       value = defaultValue;
 
     properties.put(key, new PropertyInstance<>(key, value));
-  }
-
-  Collection<PropertyInstance<?>> getProperties() {
-    return properties.values();
   }
 
   @SuppressWarnings("unchecked")

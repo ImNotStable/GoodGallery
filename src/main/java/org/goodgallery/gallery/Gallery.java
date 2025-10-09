@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.goodgallery.gallery.collections.AlbumCollection;
 import org.goodgallery.gallery.collections.GroupCollection;
 import org.goodgallery.gallery.collections.PhotoCollection;
+import org.goodgallery.gallery.data.GalleryData;
+import org.goodgallery.gallery.data.JsonGalleryData;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
@@ -33,7 +35,7 @@ public class Gallery {
     path = path.toAbsolutePath().normalize();
     if (!Files.isDirectory(path))
       Files.createDirectory(path);
-    this.galleryData = new GalleryData(path);
+    this.galleryData = JsonGalleryData.create(path);
     this.path = path;
 
     this.photos = new PhotoCollection();
