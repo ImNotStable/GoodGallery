@@ -1,6 +1,7 @@
 package org.goodgallery.gallery.properties;
 
 import com.google.gson.JsonObject;
+import org.goodgallery.gallery.Properties;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -11,7 +12,7 @@ public class PropertyKey<T> {
   final BiConsumer<PropertyInstance<T>,  JsonObject> serializer;
   private final Function<JsonObject, T> deserializer;
 
-  private Function<PropertyHolder, T> defaultProvider = _ -> null;
+  private Function<Properties, T> defaultProvider = _ -> null;
 
   public PropertyKey(String id, BiConsumer<PropertyInstance<T>, JsonObject> serializer, Function<JsonObject, T> deserializer) {
     this.id = id;
@@ -27,13 +28,13 @@ public class PropertyKey<T> {
     }
   }
 
-  public PropertyKey<T> defaultProvider(Function<PropertyHolder, T> defaultProvider) {
+  public PropertyKey<T> defaultProvider(Function<Properties, T> defaultProvider) {
     this.defaultProvider = defaultProvider;
     return this;
   }
 
-  public T getDefaultValue(PropertyHolder propertyHolder) {
-    return defaultProvider.apply(propertyHolder);
+  public T getDefaultValue(Properties properties) {
+    return defaultProvider.apply(properties);
   }
 
   @Override

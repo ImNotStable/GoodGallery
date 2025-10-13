@@ -3,12 +3,19 @@ package org.goodgallery.gallery;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import org.goodgallery.gallery.properties.PropertyHolder;
+import org.goodgallery.gallery.properties.PropertyKey;
 
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static org.goodgallery.gallery.Properties.PATH_KEY;
+
 @Getter
 public class Photo implements PropertyHolder {
+
+  private static final PropertyKey<?>[] DEFAULT_KEYS = {
+    Properties.PATH_KEY, Properties.NAME_KEY, Properties.CREATION_TIMESTAMP_KEY
+  };
 
   public static Photo create(UUID uniqueId, JsonObject json) {
     return new Photo(uniqueId, json);
@@ -19,7 +26,7 @@ public class Photo implements PropertyHolder {
 
   Photo(UUID uniqueId, JsonObject json) {
     this.uniqueId = uniqueId;
-    this.properties = new PhotoProperties(this, json);
+    this.properties = Properties.create(json, DEFAULT_KEYS);
   }
 
   Photo(UUID uniqueId) {
@@ -31,7 +38,7 @@ public class Photo implements PropertyHolder {
   }
 
   public Path getPath() {
-    return getPropertyValue(Properties.PATH_KEY);
+    return getPropertyValue(PATH_KEY);
   }
 
   public String getFileName() {
@@ -41,17 +48,6 @@ public class Photo implements PropertyHolder {
   @Override
   public String toString() {
     return uniqueId.toString();
-  }
-
-  static class PhotoProperties extends Properties {
-
-    PhotoProperties(Photo photo, JsonObject json) {
-      super(photo, json);
-      register(PATH_KEY);
-      register(NAME_KEY);
-      register(CREATION_TIMESTAMP_KEY);
-    }
-
   }
 
 }

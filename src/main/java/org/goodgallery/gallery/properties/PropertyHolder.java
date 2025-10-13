@@ -15,7 +15,7 @@ public interface PropertyHolder {
     if (properties == null)
       return null;
     T value = properties.getValue(key);
-    return value != null ? value : key.getDefaultValue(this);
+    return value != null ? value : key.getDefaultValue(properties);
   }
 
   default String getName() {

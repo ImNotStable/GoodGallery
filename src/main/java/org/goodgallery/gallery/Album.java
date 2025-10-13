@@ -3,6 +3,7 @@ package org.goodgallery.gallery;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import org.goodgallery.gallery.properties.PropertyHolder;
+import org.goodgallery.gallery.properties.PropertyKey;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +15,10 @@ import java.util.UUID;
 @Getter
 public class Album implements PropertyHolder {
 
+  private static final PropertyKey<?>[] DEFAULT_KEYS = {
+    Properties.NAME_KEY, Properties.CREATION_TIMESTAMP_KEY
+  };
+
   public static Album create(UUID uniqueId, JsonObject json, Photo... photos) {
     return  new Album(uniqueId, json, photos);
   }
@@ -24,7 +29,7 @@ public class Album implements PropertyHolder {
 
   Album(UUID uniqueId, JsonObject json, Photo... photos) {
     this.uniqueId = uniqueId;
-    this.properties = new AlbumProperties(this, json);
+    this.properties = Properties.create(json, DEFAULT_KEYS);
     this.photos = new HashSet<>();
     this.photos.addAll(Arrays.asList(photos));
   }
@@ -56,16 +61,6 @@ public class Album implements PropertyHolder {
   @Override
   public String toString() {
     return uniqueId.toString();
-  }
-
-  static class AlbumProperties extends Properties {
-
-    AlbumProperties(Album album, JsonObject json) {
-      super(album, json);
-      register(NAME_KEY);
-      register(CREATION_TIMESTAMP_KEY);
-    }
-
   }
 
 }

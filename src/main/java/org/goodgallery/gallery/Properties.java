@@ -1,7 +1,6 @@
 package org.goodgallery.gallery;
 
 import com.google.gson.JsonObject;
-import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
 
@@ -11,7 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Properties {
+public final class Properties {
 
   public static final PropertyKey<Path> PATH_KEY = new PropertyKey<>("path",
     (property, json) -> json.addProperty(property.key().toString(), property.value().toString()),
@@ -20,15 +19,15 @@ public abstract class Properties {
   public static final PropertyKey<String> NAME_KEY = new PropertyKey<>("name",
     (property, json) -> json.addProperty(property.key().toString(), property.value()),
     json -> json.getAsJsonObject("name").getAsString()
-  ).defaultProvider(propertyHolder -> {
-    Path path = propertyHolder.getPropertyValue(PATH_KEY);
+  ).defaultProvider(properties -> {
+    Path path = properties.getValue(PATH_KEY);
     return path == null ? null : path.getFileName().toString();
   });
   public static final PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp",
     (property, json) -> json.addProperty(property.key().toString(), property.value()),
     json -> json.getAsJsonObject("creation_timestamp").getAsLong()
-  ).defaultProvider(propertyHolder -> {
-    Path path = propertyHolder.getPropertyValue(PATH_KEY);
+  ).defaultProvider(properties -> {
+    Path path = properties.getValue(PATH_KEY);
 
     if (path == null)
       return System.currentTimeMillis();
@@ -41,25 +40,23 @@ public abstract class Properties {
     }
   });
 
+  public static Properties create(JsonObject json, PropertyKey<?>... keys) {
+    return new Properties(json, keys);
+  }
+
   private final Map<PropertyKey<?>, PropertyInstance<?>> properties;
-  private final PropertyHolder propertyHolder;
-  private final JsonObject json;
 
-  protected Properties(PropertyHolder propertyHolder, JsonObject json) {
+  Properties(JsonObject json, PropertyKey<?>... keys) {
     this.properties = new HashMap<>();
-    this.propertyHolder = propertyHolder;
-    this.json = json;
+    for (PropertyKey<?> key : keys)
+      register(json, key);
   }
 
-  protected <T> void register(PropertyKey<T> key) {
-    register(key, key.getDefaultValue(propertyHolder));
-  }
-
-  private <T> void register(PropertyKey<T> key, T defaultValue) {
+  private <T> void register(JsonObject json, PropertyKey<T> key) {
     T value = key.deserialize(json);
 
     if (value == null)
-      value = defaultValue;
+      value = key.getDefaultValue(this);
 
     properties.put(key, new PropertyInstance<>(key, value));
   }
