@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
@@ -12,6 +13,8 @@ import org.goodgallery.gallery.collections.GroupCollection;
 import org.goodgallery.gallery.collections.PhotoCollection;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
+import org.goodgallery.gallery.properties.SerializedProperties;
+import org.goodgallery.gallery.util.JsonByteArrayAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,6 +31,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   private final Gson GSON = new GsonBuilder()
+    .registerTypeAdapter(byte[].class, new JsonByteArrayAdapter())
     .setPrettyPrinting()
     .create();
 
@@ -58,20 +62,24 @@ public final class JsonGalleryData extends AbstractGalleryData {
       JsonObject groupJson = groupsJson.getAsJsonObject(key);
       JsonObject albumsJson = groupJson.getAsJsonObject("albums");
 
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, groupJson);
+
       Album[] albums = new Album[albumsJson.size()];
       int i = 0;
       for (String albumKey : albumsJson.keySet()) {
         JsonObject albumJson = albumsJson.getAsJsonObject(albumKey);
         JsonArray rawAlbumPhotos = albumsJson.getAsJsonObject(albumKey).getAsJsonArray("photos");
 
+        SerializedProperties serializedAlbumProperties = SerializedProperties.create(GSON, albumJson);
+
         Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
         for (int j = 0; j < rawAlbumPhotos.size(); j++)
           albumPhotos[j] = photos.getPhoto(rawAlbumPhotos.get(j).getAsString());
 
-        albums[i++] = Album.create(UUID.fromString(albumKey), albumJson, albumPhotos);
+        albums[i++] = Album.create(UUID.fromString(albumKey), serializedAlbumProperties, albumPhotos);
       }
 
-      groups.createGroup(UUID.fromString(key), groupsJson, albums);
+      groups.createGroup(UUID.fromString(key), serializedProperties, albums);
     }
   }
 
@@ -107,11 +115,13 @@ public final class JsonGalleryData extends AbstractGalleryData {
       JsonObject albumJson = albumsJson.getAsJsonObject(key);
       JsonArray rawAlbumPhotos = albumJson.getAsJsonArray("photos");
 
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, albumJson);
+
       Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
       for (int i = 0; i < rawAlbumPhotos.size(); i++)
         albumPhotos[i] = photos.getPhoto(rawAlbumPhotos.get(i).getAsString());
 
-      albums.createAlbum(UUID.fromString(key), albumJson, albumPhotos);
+      albums.createAlbum(UUID.fromString(key), serializedProperties, albumPhotos);
     }
   }
 
@@ -197,9 +207,8 @@ public final class JsonGalleryData extends AbstractGalleryData {
     JsonObject photosJson = json.getAsJsonObject("photos");
 
     for (String key : photosJson.keySet()) {
-      JsonObject photoJson = photosJson.getAsJsonObject(key);
-
-      photos.createPhoto(UUID.fromString(key), photoJson);
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, photosJson.getAsJsonObject(key));
+      photos.createPhoto(UUID.fromString(key), serializedProperties);
     }
   }
 
@@ -223,7 +232,8 @@ public final class JsonGalleryData extends AbstractGalleryData {
 
   @Override
   public void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property) {
-    property.appendJson(findProperties(propertyHolder));
+    findProperties(propertyHolder).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class));
+    save();
   }
 
   @Override

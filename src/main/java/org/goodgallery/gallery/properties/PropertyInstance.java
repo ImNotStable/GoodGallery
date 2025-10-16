@@ -1,7 +1,5 @@
 package org.goodgallery.gallery.properties;
 
-import com.google.gson.JsonObject;
-
 public final class PropertyInstance<T> {
 
   private final PropertyKey<T> key;
@@ -12,10 +10,8 @@ public final class PropertyInstance<T> {
     this.value = value;
   }
 
-  public void appendJson(JsonObject json) {
-    if (value == null)
-      return;
-    key.serializer.accept(this, json);
+  public byte[] serialize() {
+    return key.serialize(value);
   }
 
   public PropertyKey<T> key() {

@@ -1,12 +1,6 @@
 package org.goodgallery.gallery.properties;
 
-import org.goodgallery.gallery.Properties;
-
-import java.util.UUID;
-
 public interface PropertyHolder {
-
-  UUID getUniqueId();
 
   Properties getProperties();
 
@@ -16,10 +10,6 @@ public interface PropertyHolder {
       return null;
     T value = properties.getValue(key);
     return value != null ? value : key.getDefaultValue(properties);
-  }
-
-  default String getName() {
-    return getPropertyValue(Properties.NAME_KEY);
   }
 
 }

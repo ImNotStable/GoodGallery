@@ -2,6 +2,7 @@ package org.goodgallery.gallery.collections;
 
 import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Photo;
+import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -21,8 +22,8 @@ public final class PhotoCollection {
     photosByName = new ConcurrentHashMap<>();
   }
 
-  public void createPhoto(UUID uniqueId, JsonObject json) {
-    add(Photo.create(uniqueId, json));
+  public void createPhoto(UUID uniqueId, SerializedProperties serializedProperties) {
+    add(Photo.create(uniqueId, serializedProperties));
   }
 
   public void add(Photo photo) {

@@ -3,6 +3,7 @@ package org.goodgallery.gallery.collections;
 import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
+import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,8 +20,8 @@ public final class GroupCollection {
     groupsByName = new ConcurrentHashMap<>();
   }
 
-  public void createGroup(UUID uniqueId, JsonObject json, Album... albums) {
-    add(Group.create(uniqueId, json, albums));
+  public void createGroup(UUID uniqueId, SerializedProperties serializedProperties, Album... albums) {
+    add(Group.create(uniqueId, serializedProperties, albums));
   }
 
   public void add(Group group) {

@@ -19,6 +19,9 @@ allprojects {
     annotationProcessor("org.jetbrains:annotations:26.0.2-1")
     implementation("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
+
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("com.google.code.gson:gson:2.13.2")
 
     testImplementation(platform("org.junit:junit-bom:5.13.4"))

@@ -1,9 +1,9 @@
 package org.goodgallery.gallery;
 
-import com.google.gson.JsonObject;
 import lombok.Getter;
-import org.goodgallery.gallery.properties.PropertyHolder;
+import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyKey;
+import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,33 +13,28 @@ import java.util.Set;
 import java.util.UUID;
 
 @Getter
-public class Group implements PropertyHolder {
+public class Group extends GalleryItem {
 
   private static final PropertyKey<?>[] DEFAULT_KEYS = {
-    Properties.NAME_KEY, Properties.CREATION_TIMESTAMP_KEY
+    PropertiesImpl.NAME_KEY, PropertiesImpl.CREATION_TIMESTAMP_KEY
   };
 
-  public static Group create(UUID uniqueId, JsonObject json, Album... albums) {
-    return new Group(uniqueId, json, albums);
+  public static Group create(UUID uniqueId, SerializedProperties serializedProperties, Album... albums) {
+    return new Group(uniqueId, serializedProperties, albums);
   }
 
-  private final UUID uniqueId;
-  private final Properties properties;
   private final Set<Album> albums;
 
-  Group(UUID uniqueId, JsonObject json, Album... albums) {
-    this.uniqueId = uniqueId;
-    this.properties = new Properties(json, DEFAULT_KEYS);
+  Group(UUID uniqueId, SerializedProperties serializedProperties, Album... albums) {
+    super(uniqueId, serializedProperties, DEFAULT_KEYS);
     this.albums = new HashSet<>();
     this.albums.addAll(Arrays.asList(albums));
   }
 
-  Group(UUID uniqueId, Album... albums) {
-    this(uniqueId, null, albums);
-  }
-
   Group(Album... albums) {
-    this(UUID.randomUUID(), albums);
+    super(DEFAULT_KEYS);
+    this.albums = new HashSet<>();
+    this.albums.addAll(Arrays.asList(albums));
   }
 
   public Collection<Album> getAlbums() {
@@ -52,11 +47,6 @@ public class Group implements PropertyHolder {
 
   void removeAlbum(Album album) {
     albums.remove(album);
-  }
-
-  @Override
-  public String toString() {
-    return uniqueId.toString();
   }
 
 }

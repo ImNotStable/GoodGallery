@@ -1,28 +1,31 @@
 package org.goodgallery.gallery.properties;
 
-import com.google.gson.JsonObject;
-import org.goodgallery.gallery.Properties;
-
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class PropertyKey<T> {
 
   private final String id;
-  final BiConsumer<PropertyInstance<T>,  JsonObject> serializer;
-  private final Function<JsonObject, T> deserializer;
+  private final Function<T,  byte[]> serializer;
+  private final Function<byte[], T> deserializer;
 
   private Function<Properties, T> defaultProvider = _ -> null;
 
-  public PropertyKey(String id, BiConsumer<PropertyInstance<T>, JsonObject> serializer, Function<JsonObject, T> deserializer) {
+  public PropertyKey(String id, Function<T, byte[]> serializer, Function<byte[], T> deserializer) {
     this.id = id;
     this.serializer = serializer;
     this.deserializer = deserializer;
   }
 
-  public T deserialize(JsonObject json) {
+  public byte[] serialize(T value) {
+    if (value == null)
+      return new byte[0];
+
+    return serializer.apply(value);
+  }
+
+  public T deserialize(byte[] serializedData) {
     try {
-      return deserializer.apply(json);
+      return deserializer.apply(serializedData);
     } catch (Throwable ignored) {
       return null;
     }

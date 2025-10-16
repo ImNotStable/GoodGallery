@@ -6,6 +6,7 @@ import org.goodgallery.gallery.collections.GroupCollection;
 import org.goodgallery.gallery.collections.PhotoCollection;
 import org.goodgallery.gallery.data.GalleryData;
 import org.goodgallery.gallery.data.JsonGalleryData;
+import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
@@ -65,7 +66,7 @@ public class Gallery {
   public Group createGroup(String name) {
     Group group = new Group();
     galleryData.addGroup(group);
-    updateProperty(group, Properties.NAME_KEY, name);
+    updateProperty(group, PropertiesImpl.NAME_KEY, name);
     groups.add(group);
     return group;
   }
@@ -122,7 +123,7 @@ public class Gallery {
   public Album createAlbum(String name, Photo... photos) {
     Album album = new Album(photos);
     galleryData.addAlbum(album, photos);
-    updateProperty(album, Properties.NAME_KEY, name);
+    updateProperty(album, PropertiesImpl.NAME_KEY, name);
     albums.add(album);
     return album;
   }
@@ -185,7 +186,7 @@ public class Gallery {
 
     Photo photo = new Photo();
     galleryData.addPhoto(photo);
-    updateProperty(photo, Properties.PATH_KEY, newPath);
+    updateProperty(photo, PropertiesImpl.PATH_KEY, newPath);
     photos.add(photo);
 
     for (Album album : albums)
@@ -203,11 +204,11 @@ public class Gallery {
   public void deletePhoto(Photo photo) throws IOException {
     galleryData.deletePhoto(photo);
     photos.remove(photo);
-    Files.deleteIfExists(photo.getPropertyValue(Properties.PATH_KEY));
+    Files.deleteIfExists(photo.getPropertyValue(PropertiesImpl.PATH_KEY));
   }
 
   public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {
-    PropertyInstance<T> property = propertyHolder.getProperties().set(key, value);
+    PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).set(key, value);
     galleryData.updateProperty(propertyHolder, property);
   }
 
