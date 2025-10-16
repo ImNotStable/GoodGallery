@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SerializedProperties implements Properties {
+public final class SerializedProperties implements Properties {
 
   public static SerializedProperties create(Gson gson, JsonObject json) {
     Map<String, byte[]> serializedData = new HashMap<>();

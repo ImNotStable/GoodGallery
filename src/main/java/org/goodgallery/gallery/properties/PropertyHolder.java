@@ -8,8 +8,7 @@ public interface PropertyHolder {
     Properties properties = getProperties();
     if (properties == null)
       return null;
-    T value = properties.getValue(key);
-    return value != null ? value : key.getDefaultValue(properties);
+    return properties.getValueOrDefault(key);
   }
 
 }

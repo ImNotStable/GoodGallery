@@ -4,7 +4,6 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class PropertiesImpl implements Properties {
 
@@ -23,11 +22,7 @@ public final class PropertiesImpl implements Properties {
   }
 
   private <T> void register(SerializedProperties serializedProperties, PropertyKey<T> key) {
-    T value = serializedProperties.getValue(key);
-
-    if (value == null)
-      value = key.getDefaultValue(this);
-
+    T value = serializedProperties.getValueOrDefault(key, key.getDefaultValue(this));
     properties.put(key, new PropertyInstance<>(key, value));
   }
 
@@ -43,11 +38,6 @@ public final class PropertiesImpl implements Properties {
   @ApiStatus.Internal
   public <T> PropertyInstance<T> set(PropertyKey<T> key, T value) {
     return get(key).value(value);
-  }
-
-  public SerializedProperties serialize() {
-    return new SerializedProperties(properties.values().stream()
-      .collect(Collectors.toMap(PropertyInstance::toString, PropertyInstance::serialize)));
   }
 
 }

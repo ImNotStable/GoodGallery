@@ -2,7 +2,7 @@ package org.goodgallery.gallery.properties;
 
 import java.util.function.Function;
 
-public class PropertyKey<T> {
+public final class PropertyKey<T> {
 
   private final String id;
   private final Function<T,  byte[]> serializer;

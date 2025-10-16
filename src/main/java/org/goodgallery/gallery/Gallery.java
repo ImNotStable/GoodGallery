@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class Gallery {
+public final class Gallery {
 
   @Getter
   private final Path path;

@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Getter
-public class Group extends GalleryItem {
+public final class Group extends GalleryItem {
 
   private static final PropertyKey<?>[] DEFAULT_KEYS = {
     PropertiesImpl.NAME_KEY, PropertiesImpl.CREATION_TIMESTAMP_KEY

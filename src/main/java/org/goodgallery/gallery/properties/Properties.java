@@ -1,7 +1,6 @@
 package org.goodgallery.gallery.properties;
 
 import org.goodgallery.gallery.util.Transformer;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -34,6 +33,10 @@ public interface Properties {
 
   <T> T getValue(PropertyKey<T> key);
 
+  default <T> T getValueOrDefault(PropertyKey<T> key) {
+    return getValueOrDefault(key, key.getDefaultValue(this));
+  }
+
   default <T> T getValueOrDefault(PropertyKey<T> key, T defaultValue) {
     T value = getValue(key);
     return value != null ? value : defaultValue;
@@ -41,6 +44,15 @@ public interface Properties {
 
   default <T, O> O getTransformedValue(PropertyKey<T> key, Transformer<T, O> transformer) {
     return getTransformedValueOrDefault(key, transformer, null);
+  }
+
+  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer) {
+    T value = getValueOrDefault(key);
+    try {
+      return transformer.transform(value);
+    } catch (Throwable e) {
+      return null;
+    }
   }
 
   default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer, O defaultValue) {

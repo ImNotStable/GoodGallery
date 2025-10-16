@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.goodgallery.gallery.properties.PropertiesImpl.PATH_KEY;
 
 @Getter
-public class Photo extends GalleryItem {
+public final class Photo extends GalleryItem {
 
   private static final PropertyKey<?>[] DEFAULT_KEYS = {
     PropertiesImpl.PATH_KEY, PropertiesImpl.NAME_KEY, PropertiesImpl.CREATION_TIMESTAMP_KEY
