@@ -1,6 +1,5 @@
 package org.goodgallery.gallery.collections;
 
-import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Photo;
 import org.goodgallery.gallery.properties.SerializedProperties;
 

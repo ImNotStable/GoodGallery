@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
@@ -259,7 +258,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
     return json.getAsJsonObject("groups").getAsJsonObject(uniqueId);
   }
 
-  private @Nullable JsonObject findAlbumParent(String uniqueId) {
+  private JsonObject findAlbumParent(String uniqueId) {
     JsonObject galleryAlbums = json.getAsJsonObject("albums");
 
     if (galleryAlbums.has(uniqueId))
@@ -273,7 +272,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
         return groupAlbums;
     }
 
-    return null;
+    throw new IllegalArgumentException("Album \"%s\" does not exist".formatted(uniqueId));
   }
 
   private JsonObject findAlbum(String uniqueId) {
