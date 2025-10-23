@@ -12,6 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 public interface Properties {
 
@@ -98,21 +99,17 @@ public interface Properties {
     return getTransformedValueOrDefault(key, transformer, null);
   }
 
-  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer) {
+  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer) {
     T value = getValueOrDefault(key);
-    try {
-      return transformer.transform(value);
-    } catch (Throwable e) {
-      return null;
-    }
+    return transformer.apply(value);
   }
 
   default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer, O defaultValue) {
     T value = getValue(key);
     try {
       return value != null ? transformer.transform(value) : defaultValue;
-    } catch (Throwable e) {
-      return null;
+    } catch (Throwable ignored) {
+      return defaultValue;
     }
   }
 

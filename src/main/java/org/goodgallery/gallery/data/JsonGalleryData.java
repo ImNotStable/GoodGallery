@@ -70,11 +70,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public boolean hasGroup(Group group) {
-    return json.getAsJsonObject("groups").has(group.toString());
-  }
-
-  @Override
   public void deleteGroup(Group group) {
     json.getAsJsonObject("groups").remove(group.toString());
     save();
@@ -95,11 +90,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
     JsonObject albums = json.getAsJsonObject("albums");
     albums.add(album.toString(), new JsonObject());
     save();
-  }
-
-  @Override
-  public boolean hasAlbum(Album album) {
-    return json.getAsJsonObject("albums").has(album.toString());
   }
 
   @Override
@@ -126,11 +116,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public boolean hasPhoto(Photo photo) {
-    return json.getAsJsonObject("photos").has(photo.toString());
-  }
-
-  @Override
   public void deletePhoto(Photo photo) {
     json.getAsJsonObject("photos").remove(photo.toString());
     save();
@@ -152,24 +137,8 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   private JsonObject findProperties(@NotNull PropertyHolder propertyHolder) {
-    return switch (propertyHolder) {
-      case Photo photo -> findPhoto(photo);
-      case Album album -> findAlbum(album);
-      case Group group -> findGroup(group);
-      default -> new JsonObject();
-    };
-  }
-
-  private JsonObject findGroup(Group group) {
-    return json.getAsJsonObject("groups").getAsJsonObject(group.toString());
-  }
-
-  private JsonObject findAlbum(Album album) {
-    return json.getAsJsonObject("albums").getAsJsonObject(album.toString());
-  }
-
-  private JsonObject findPhoto(Photo photo) {
-    return json.getAsJsonObject("photos").getAsJsonObject(photo.toString());
+    return json.getAsJsonObject(propertyHolder.getClass().getSimpleName().toLowerCase() + "s")
+      .getAsJsonObject(propertyHolder.toString());
   }
 
 }

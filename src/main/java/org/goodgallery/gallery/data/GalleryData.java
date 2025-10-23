@@ -15,23 +15,17 @@ public interface GalleryData {
 
   void addGroup(Group group);
 
-  boolean hasGroup(Group group);
-
   void deleteGroup(Group group);
 
   void loadAlbums(AlbumCollection albums);
 
   void addAlbum(Album album);
 
-  boolean hasAlbum(Album album);
-
   void deleteAlbum(Album album);
 
   void loadPhotos(PhotoCollection photos);
 
   void addPhoto(Photo photo);
-
-  boolean hasPhoto(Photo photo);
 
   void deletePhoto(Photo photo);
 
