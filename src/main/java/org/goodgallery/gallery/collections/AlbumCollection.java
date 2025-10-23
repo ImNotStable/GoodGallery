@@ -19,8 +19,8 @@ public final class AlbumCollection {
     albumsByName = new ConcurrentHashMap<>();
   }
 
-  public void createAlbum(UUID uniqueId, SerializedProperties serializedProperties, Photo... photos) {
-    add(Album.create(uniqueId, serializedProperties, photos));
+  public void createAlbum(UUID uniqueId, SerializedProperties serializedProperties) {
+    add(Album.create(uniqueId, serializedProperties));
   }
 
   public void add(Album album) {

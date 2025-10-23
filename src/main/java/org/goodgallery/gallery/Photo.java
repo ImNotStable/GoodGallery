@@ -1,6 +1,7 @@
 package org.goodgallery.gallery;
 
 import lombok.Getter;
+import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyKey;
 import org.goodgallery.gallery.properties.SerializedProperties;
@@ -14,7 +15,7 @@ import static org.goodgallery.gallery.properties.PropertiesImpl.PATH_KEY;
 public final class Photo extends GalleryItem {
 
   private static final PropertyKey<?>[] DEFAULT_KEYS = {
-    PropertiesImpl.PATH_KEY, PropertiesImpl.NAME_KEY, PropertiesImpl.CREATION_TIMESTAMP_KEY
+    Properties.PATH_KEY, Properties.NAME_KEY, Properties.CREATION_TIMESTAMP_KEY
   };
 
   public static Photo create(UUID uniqueId, SerializedProperties serializedProperties) {

@@ -8,11 +8,10 @@ import org.goodgallery.gallery.collections.GroupCollection;
 import org.goodgallery.gallery.collections.PhotoCollection;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
-import org.jetbrains.annotations.Nullable;
 
 public interface GalleryData {
 
-  void loadGroups(GroupCollection groups, PhotoCollection photos);
+  void loadGroups(GroupCollection groups);
 
   void addGroup(Group group);
 
@@ -20,15 +19,9 @@ public interface GalleryData {
 
   void deleteGroup(Group group);
 
-  void loadAlbums(AlbumCollection albums, PhotoCollection photos);
+  void loadAlbums(AlbumCollection albums);
 
-  void addAlbum(Album album, Photo... photos);
-
-  void moveAlbum(Album album, @Nullable Group group);
-
-  void addPhotoToAlbum(Photo photo, Album album);
-
-  void removePhotoFromAlbum(Photo photo, Album album);
+  void addAlbum(Album album);
 
   boolean hasAlbum(Album album);
 

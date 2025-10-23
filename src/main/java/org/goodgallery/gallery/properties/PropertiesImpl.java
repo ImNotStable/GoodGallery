@@ -1,7 +1,5 @@
 package org.goodgallery.gallery.properties;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,17 +25,16 @@ public final class PropertiesImpl implements Properties {
   }
 
   @SuppressWarnings("unchecked")
-  <T> PropertyInstance<T> get(PropertyKey<T> key) {
+  public <T> PropertyInstance<T> get(PropertyKey<T> key) {
     return (PropertyInstance<T>) properties.get(key);
+  }
+
+  public <T> PropertyInstance<T> set(PropertyKey<T> key, T value) {
+    return get(key).value(value);
   }
 
   public <T> T getValue(PropertyKey<T> key) {
     return get(key).value();
-  }
-
-  @ApiStatus.Internal
-  public <T> PropertyInstance<T> set(PropertyKey<T> key, T value) {
-    return get(key).value(value);
   }
 
 }

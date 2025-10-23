@@ -1,25 +1,28 @@
 package org.goodgallery.gallery;
 
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import org.goodgallery.gallery.collections.AlbumCollection;
 import org.goodgallery.gallery.collections.GroupCollection;
 import org.goodgallery.gallery.collections.PhotoCollection;
 import org.goodgallery.gallery.data.GalleryData;
 import org.goodgallery.gallery.data.JsonGalleryData;
+import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.PropertyKey;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public final class Gallery {
@@ -42,9 +45,9 @@ public final class Gallery {
     this.photos = new PhotoCollection();
     galleryData.loadPhotos(photos);
     this.albums = new AlbumCollection();
-    galleryData.loadAlbums(albums, photos);
+    galleryData.loadAlbums(albums);
     this.groups = new GroupCollection();
-    galleryData.loadGroups(groups, photos);
+    galleryData.loadGroups(groups);
   }
 
   public Collection<Group> getGroups() {
@@ -76,32 +79,18 @@ public final class Gallery {
     groups.remove(group);
   }
 
-  public void moveAlbum(Album album, @Nullable Group group) {
-    Group originalGroup = findGroupWithAlbum(album);
-    if (originalGroup == group)
-      return;
+  public void addAlbumToGroup(Album album, Group group) {
+    Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
+    Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
 
-    galleryData.moveAlbum(album, group);
-    if (group == null) {
-      originalGroup.removeAlbum(album);
-      albums.add(album);
-      return;
-    }
-
-    if (originalGroup == null)
-      albums.remove(album);
-    else
-      originalGroup.removeAlbum(album);
-    group.addAlbum(album);
+    mutateProperty(album, Properties.ALBUMS_KEY, albums -> albums.add(album));
   }
 
-  private @Nullable Group findGroupWithAlbum(Album album) {
-    if (albums.has(album))
-      return null;
-    for (Group group : groups.getGroups())
-      if (group.getAlbums().contains(album))
-        return group;
-    throw new IllegalArgumentException("Album " + album.getName() + " not found");
+  public void removeAlbumFromGroup(Album album, Group group) {
+    Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
+    Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
+
+    mutateProperty(album, Properties.ALBUMS_KEY, albums -> albums.remove(album));
   }
 
   public Collection<Album> getAlbums() {
@@ -120,9 +109,9 @@ public final class Gallery {
     return albums.has(name);
   }
 
-  public Album createAlbum(String name, Photo... photos) {
-    Album album = new Album(photos);
-    galleryData.addAlbum(album, photos);
+  public Album createAlbum(String name) {
+    Album album = new Album();
+    galleryData.addAlbum(album);
     updateProperty(album, PropertiesImpl.NAME_KEY, name);
     albums.add(album);
     return album;
@@ -134,23 +123,17 @@ public final class Gallery {
   }
 
   public void addPhotoToAlbum(Photo photo, Album album) {
-    if (!photos.has(photo))
-      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
-    if (!albums.has(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
+    Preconditions.checkState(photos.has(photo), "Photo \"%s\" does not exist", photo.getName());
+    Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
 
-    galleryData.addPhotoToAlbum(photo, album);
-    album.addPhoto(photo);
+    mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.add(photo));
   }
 
   public void removePhotoFromAlbum(Photo photo, Album album) {
-    if (!photos.has(photo))
-      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.getFileName()));
-    if (!albums.has(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName()));
+    Preconditions.checkState(photos.has(photo), "Photo \"%s\" does not exist", photo.getName());
+    Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
 
-    galleryData.removePhotoFromAlbum(photo, album);
-    album.removePhoto(photo);
+    mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.remove(photo));
   }
 
   public Collection<Photo> getPhotos() {
@@ -180,7 +163,7 @@ public final class Gallery {
     Path newPath = path.resolve(originalPath.getFileName());
 
     if (Files.exists(newPath))
-      throw new IllegalStateException("Photo at \"%s\" already exists".formatted(newPath));
+      throw new FileAlreadyExistsException("Photo at \"%s\" already exists".formatted(newPath));
 
     Files.copy(originalPath, newPath, StandardCopyOption.COPY_ATTRIBUTES);
 
@@ -209,6 +192,12 @@ public final class Gallery {
 
   public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {
     PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).set(key, value);
+    galleryData.updateProperty(propertyHolder, property);
+  }
+
+  public <T> void mutateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, Consumer<T> mutator) {
+    PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).get(key);
+    mutator.accept(property.value());
     galleryData.updateProperty(propertyHolder, property);
   }
 

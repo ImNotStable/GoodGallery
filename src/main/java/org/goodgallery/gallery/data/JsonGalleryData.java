@@ -2,7 +2,6 @@ package org.goodgallery.gallery.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
@@ -15,7 +14,6 @@ import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.SerializedProperties;
 import org.goodgallery.gallery.util.JsonByteArrayAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,45 +52,20 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public void loadGroups(GroupCollection groups, PhotoCollection photos) {
+  public void loadGroups(GroupCollection groups) {
     JsonObject groupsJson = json.getAsJsonObject("groups");
 
     for (String key : groupsJson.keySet()) {
       JsonObject groupJson = groupsJson.getAsJsonObject(key);
-      JsonObject albumsJson = groupJson.getAsJsonObject("albums");
-
       SerializedProperties serializedProperties = SerializedProperties.create(GSON, groupJson);
-
-      Album[] albums = new Album[albumsJson.size()];
-      int i = 0;
-      for (String albumKey : albumsJson.keySet()) {
-        JsonObject albumJson = albumsJson.getAsJsonObject(albumKey);
-        JsonArray rawAlbumPhotos = albumsJson.getAsJsonObject(albumKey).getAsJsonArray("photos");
-
-        SerializedProperties serializedAlbumProperties = SerializedProperties.create(GSON, albumJson);
-
-        Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
-        for (int j = 0; j < rawAlbumPhotos.size(); j++)
-          albumPhotos[j] = photos.getPhoto(rawAlbumPhotos.get(j).getAsString());
-
-        albums[i++] = Album.create(UUID.fromString(albumKey), serializedAlbumProperties, albumPhotos);
-      }
-
-      groups.createGroup(UUID.fromString(key), serializedProperties, albums);
+      groups.createGroup(UUID.fromString(key), serializedProperties);
     }
   }
 
   @Override
   public void addGroup(Group group) {
     JsonObject groups = json.getAsJsonObject("groups");
-
-    JsonObject groupJson = new JsonObject();
-    JsonArray albumArray = new JsonArray();
-    for (Album album : group.getAlbums())
-      albumArray.add(album.toString());
-    groupJson.add("albums", new JsonObject());
-
-    groups.add(group.toString(), groupJson);
+    groups.add(group.toString(), new JsonObject());
     save();
   }
 
@@ -108,91 +81,25 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public void loadAlbums(AlbumCollection albums, PhotoCollection photos) {
+  public void loadAlbums(AlbumCollection albums) {
     JsonObject albumsJson = json.getAsJsonObject("albums");
     for (String key : albumsJson.keySet()) {
       JsonObject albumJson = albumsJson.getAsJsonObject(key);
-      JsonArray rawAlbumPhotos = albumJson.getAsJsonArray("photos");
-
       SerializedProperties serializedProperties = SerializedProperties.create(GSON, albumJson);
-
-      Photo[] albumPhotos = new Photo[rawAlbumPhotos.size()];
-      for (int i = 0; i < rawAlbumPhotos.size(); i++)
-        albumPhotos[i] = photos.getPhoto(rawAlbumPhotos.get(i).getAsString());
-
-      albums.createAlbum(UUID.fromString(key), serializedProperties, albumPhotos);
+      albums.createAlbum(UUID.fromString(key), serializedProperties);
     }
   }
 
   @Override
-  public void addAlbum(Album album, Photo... photos) {
+  public void addAlbum(Album album) {
     JsonObject albums = json.getAsJsonObject("albums");
-
-    JsonObject albumJson = new JsonObject();
-    JsonArray photosArray = new JsonArray();
-    for (Photo photo : photos)
-      photosArray.add(photo.getFileName());
-    albumJson.add("photos", photosArray);
-
-    albums.add(album.toString(), albumJson);
-    save();
-  }
-
-  @Override
-  public void moveAlbum(Album album, @Nullable Group group) {
-    if (!hasAlbum(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
-    if (group != null && !hasGroup(group))
-      throw new IllegalStateException("Group \"%s\" does not exist".formatted(group.toString()));
-
-    JsonObject originalAlbumParent = findAlbumParent(album.toString());
-    JsonObject albumJson = originalAlbumParent.getAsJsonObject(album.toString());
-    JsonObject newAlbumParent = group == null ?
-      json.getAsJsonObject("albums") :
-      json.getAsJsonObject("groups").getAsJsonObject(group.toString()).getAsJsonObject("albums");
-
-    originalAlbumParent.remove(album.toString());
-    newAlbumParent.add(album.toString(), albumJson);
-
-    save();
-  }
-
-  @Override
-  public void addPhotoToAlbum(Photo photo, Album album) {
-    if (!hasPhoto(photo))
-      throw new IllegalStateException("Photo \"%s\" does not exist".formatted(photo.toString()));
-    if (!hasAlbum(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
-
-    json.getAsJsonObject("albums")
-      .getAsJsonObject(album.toString())
-      .getAsJsonArray("photos")
-      .add(photo.getFileName());
-
-    save();
-  }
-
-  @Override
-  public void removePhotoFromAlbum(Photo photo, Album album) {
-    if (!hasPhoto(photo))
-      throw new IllegalStateException("Photo at \"%s\" does not exist".formatted(photo.toString()));
-    if (!hasAlbum(album))
-      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.toString()));
-
-    JsonArray photos = json.getAsJsonObject("albums")
-      .getAsJsonObject(album.toString())
-      .getAsJsonArray("photos");
-
-    for (int i = 0; i < photos.size(); i++)
-      if (photos.get(i).getAsString().equals(photo.getFileName()))
-        photos.remove(i);
-
+    albums.add(album.toString(), new JsonObject());
     save();
   }
 
   @Override
   public boolean hasAlbum(Album album) {
-    return findAlbum(album.toString()) != null;
+    return json.getAsJsonObject("albums").has(album.toString());
   }
 
   @Override
@@ -245,42 +152,24 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   private JsonObject findProperties(@NotNull PropertyHolder propertyHolder) {
-    String uniqueId = propertyHolder.toString();
     return switch (propertyHolder) {
-      case Photo _ -> findPhoto(uniqueId);
-      case Album _ -> findAlbum(uniqueId);
-      case Group _ -> findGroup(uniqueId);
+      case Photo photo -> findPhoto(photo);
+      case Album album -> findAlbum(album);
+      case Group group -> findGroup(group);
       default -> new JsonObject();
     };
   }
 
-  private JsonObject findGroup(String uniqueId) {
-    return json.getAsJsonObject("groups").getAsJsonObject(uniqueId);
+  private JsonObject findGroup(Group group) {
+    return json.getAsJsonObject("groups").getAsJsonObject(group.toString());
   }
 
-  private JsonObject findAlbumParent(String uniqueId) {
-    JsonObject galleryAlbums = json.getAsJsonObject("albums");
-
-    if (galleryAlbums.has(uniqueId))
-      return galleryAlbums;
-
-    JsonObject groups = json.getAsJsonObject("groups");
-
-    for (String groupName : groups.keySet()) {
-      JsonObject groupAlbums = groups.getAsJsonObject(groupName).getAsJsonObject("albums");
-      if (groupAlbums.has(uniqueId))
-        return groupAlbums;
-    }
-
-    throw new IllegalArgumentException("Album \"%s\" does not exist".formatted(uniqueId));
+  private JsonObject findAlbum(Album album) {
+    return json.getAsJsonObject("albums").getAsJsonObject(album.toString());
   }
 
-  private JsonObject findAlbum(String uniqueId) {
-    return findAlbumParent(uniqueId).getAsJsonObject(uniqueId);
-  }
-
-  private JsonObject findPhoto(String uniqueId) {
-    return json.getAsJsonObject("photos").getAsJsonObject(uniqueId);
+  private JsonObject findPhoto(Photo photo) {
+    return json.getAsJsonObject("photos").getAsJsonObject(photo.toString());
   }
 
 }

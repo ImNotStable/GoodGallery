@@ -19,8 +19,8 @@ public final class GroupCollection {
     groupsByName = new ConcurrentHashMap<>();
   }
 
-  public void createGroup(UUID uniqueId, SerializedProperties serializedProperties, Album... albums) {
-    add(Group.create(uniqueId, serializedProperties, albums));
+  public void createGroup(UUID uniqueId, SerializedProperties serializedProperties) {
+    add(Group.create(uniqueId, serializedProperties));
   }
 
   public void add(Group group) {
