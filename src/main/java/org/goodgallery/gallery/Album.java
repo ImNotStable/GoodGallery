@@ -6,6 +6,7 @@ import org.goodgallery.gallery.properties.PropertyKey;
 import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 @Getter
@@ -28,15 +29,7 @@ public final class Album extends GalleryItem {
   }
 
   public Collection<Photo> getPhotos() {
-    return getProperties().getValue(Properties.PHOTOS_KEY);
-  }
-
-  void addPhoto(Photo photo) {
-    getPhotos().add(photo);
-  }
-
-  void removePhoto(Photo photo) {
-    getPhotos().remove(photo);
+    return Collections.unmodifiableCollection(getProperties().getValue(Properties.PHOTOS_KEY));
   }
 
 }

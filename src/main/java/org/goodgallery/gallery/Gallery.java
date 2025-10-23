@@ -83,14 +83,14 @@ public final class Gallery {
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
     Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
 
-    mutateProperty(album, Properties.ALBUMS_KEY, albums -> albums.add(album));
+    mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.add(album));
   }
 
   public void removeAlbumFromGroup(Album album, Group group) {
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
     Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
 
-    mutateProperty(album, Properties.ALBUMS_KEY, albums -> albums.remove(album));
+    mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.remove(album));
   }
 
   public Collection<Album> getAlbums() {
@@ -156,7 +156,7 @@ public final class Gallery {
     return photos.has(name);
   }
 
-  public Photo copyPhoto(Path originalPath, Album... albums) throws IOException {
+  public Photo copyPhoto(Path originalPath) throws IOException {
     if (!Files.exists(originalPath))
       throw new FileNotFoundException("Photo at \"%s\" does not exist".formatted(originalPath));
 
@@ -172,14 +172,11 @@ public final class Gallery {
     updateProperty(photo, PropertiesImpl.PATH_KEY, newPath);
     photos.add(photo);
 
-    for (Album album : albums)
-      addPhotoToAlbum(photo, album);
-
     return photo;
   }
 
-  public Photo cutPhoto(Path originalPath, Album... albums) throws IOException {
-    Photo photo = copyPhoto(originalPath, albums);
+  public Photo cutPhoto(Path originalPath) throws IOException {
+    Photo photo = copyPhoto(originalPath);
     Files.deleteIfExists(originalPath);
     return photo;
   }
