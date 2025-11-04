@@ -15,16 +15,31 @@ public final class PhotoCollection {
   private final Map<Path, Photo> photosByPath;
   private final Map<String, Photo> photosByName;
 
+  /**
+   * Creates an empty PhotoCollection with concurrent indices for lookup by UUID, file path, and name.
+   */
   public PhotoCollection() {
     photosByUUID = new ConcurrentHashMap<>();
     photosByPath = new ConcurrentHashMap<>();
     photosByName = new ConcurrentHashMap<>();
   }
 
+  /**
+   * Creates a Photo from the given serialized properties and inserts it into the collection indexes.
+   *
+   * @param uniqueId the unique identifier to assign to the new Photo
+   * @param serializedProperties serialized properties used to construct the Photo
+   */
   public void createPhoto(UUID uniqueId, SerializedProperties serializedProperties) {
     add(Photo.create(uniqueId, serializedProperties));
   }
 
+  /**
+   * Adds a Photo to the collection and indexes it by UUID, filesystem path, and name.
+   *
+   * @param photo the Photo to add; its UUID, path, and name will be used as keys
+   *              (existing mappings for those keys will be replaced)
+   */
   public void add(Photo photo) {
     photosByUUID.put(photo.getUniqueId(), photo);
     photosByPath.put(photo.getPath(), photo);

@@ -8,16 +8,47 @@ import org.goodgallery.gallery.properties.PropertyInstance;
 
 public interface GalleryData {
 
-  void loadGroups(GroupCollection groups);
+  /**
+ * Loads the given collection of groups into the gallery data model.
+ *
+ * @param groups the collection of groups to load into the data model
+ */
+void loadGroups(GroupCollection groups);
 
-  void loadAlbums(AlbumCollection albums);
+  /**
+ * Loads the given album collection into the gallery data model.
+ *
+ * @param albums the collection of albums to load into the data model
+ */
+void loadAlbums(AlbumCollection albums);
 
-  void loadPhotos(PhotoCollection photos);
+  /**
+ * Loads a collection of photos into the gallery data model.
+ *
+ * @param photos the collection of photos to load
+ */
+void loadPhotos(PhotoCollection photos);
 
-  void add(PropertyHolder propertyHolder);
+  /**
+ * Adds the given PropertyHolder to the gallery data model.
+ *
+ * @param propertyHolder the property holder to add to the data model
+ */
+void add(PropertyHolder propertyHolder);
 
-  void delete(PropertyHolder propertyHolder);
+  /**
+ * Removes the given property holder from the gallery data model.
+ *
+ * @param propertyHolder the property holder to remove
+ */
+void delete(PropertyHolder propertyHolder);
 
-  void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property);
+  /**
+ * Update the given property instance on the supplied property holder.
+ *
+ * @param propertyHolder the holder (for example a group, album, or photo) that contains the property to update
+ * @param property the property instance containing the new value to apply to the holder
+ */
+void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property);
 
 }
