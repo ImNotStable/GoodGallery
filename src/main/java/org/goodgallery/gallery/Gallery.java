@@ -76,6 +76,12 @@ public final class Gallery {
     return groups.getGroup(name);
   }
 
+  /**
+   * Check whether a group with the given name exists in the gallery.
+   *
+   * @param name the group name to look up
+   * @return `true` if a group with the given name exists in the gallery, `false` otherwise
+   */
   public boolean hasGroup(String name) {
     return groups.has(name);
   }
@@ -146,15 +152,20 @@ public final class Gallery {
     return albums.getAlbum(uniqueId);
   }
 
+  /**
+   * Retrieve the album with the specified name.
+   *
+   * @param name the album name to look up
+   * @return the Album with the given name, or {@code null} if no such album exists
+   */
   public Album getAlbum(String name) {
     return albums.getAlbum(name);
   }
 
   /**
-   * Check whether an album with the specified name exists in the gallery.
+   * Determines whether an album with the specified name exists in the gallery.
    *
-   * @param name the album name to look up
-   * @return `true` if an album with the specified name exists, `false` otherwise
+   * @return true if an album with the specified name exists, false otherwise
    */
   public boolean hasAlbum(String name) {
     return albums.has(name);
@@ -198,9 +209,9 @@ public final class Gallery {
   }
 
   /**
-   * Remove a photo from the specified album.
+   * Removes the specified photo from the specified album.
    *
-   * @param photo the photo to remove from the album
+   * @param photo the photo to remove
    * @param album the album to remove the photo from
    * @throws IllegalStateException if the photo or album does not exist in this gallery
    */
@@ -211,7 +222,7 @@ public final class Gallery {
   }
 
   /**
-   * Return an unmodifiable view of all photos in the gallery.
+   * Get an unmodifiable view of all photos in the gallery.
    *
    * @return an unmodifiable Collection of Photo containing every photo managed by the gallery
    */
@@ -227,6 +238,12 @@ public final class Gallery {
     return photos.getPhoto(path);
   }
 
+  /**
+   * Retrieve a photo by its name.
+   *
+   * @param name the photo's name
+   * @return the Photo with the specified name, or null if no photo with that name exists
+   */
   public Photo getPhoto(String name) {
     return photos.getPhoto(name);
   }
@@ -308,11 +325,11 @@ public final class Gallery {
   }
 
   /**
-   * Applies a mutation to the value of the specified property on a PropertyHolder and persists the updated property.
+   * Mutates a property's value on the given PropertyHolder and persists the updated property.
    *
    * @param propertyHolder the holder containing the property to mutate
    * @param key the key identifying which property to mutate
-   * @param mutator a consumer that performs in-place mutation of the property's value
+   * @param mutator a consumer that modifies the property's current value in place
    */
   public <T> void mutateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, Consumer<T> mutator) {
     PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).get(key);

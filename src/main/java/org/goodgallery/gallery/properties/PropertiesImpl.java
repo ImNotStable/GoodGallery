@@ -21,10 +21,12 @@ public final class PropertiesImpl implements Properties {
   private final Map<PropertyKey<?>, PropertyInstance<?>> properties;
 
   /**
-   * Initializes the properties map and registers each provided key, loading each key's value
-   * from the given serializedProperties or from the key's default when absent.
+   * Constructs a PropertiesImpl and registers the supplied property keys into its internal registry.
    *
-   * @param serializedProperties source of persisted property values; may be empty
+   * Each key is initialized with a value from {@code serializedProperties} when present, or with the key's
+   * default value otherwise.
+   *
+   * @param serializedProperties source of persisted property values used to initialize keys
    * @param keys                 the property keys to register and initialize
    */
   PropertiesImpl(SerializedProperties serializedProperties, PropertyKey<?>... keys) {
@@ -45,10 +47,10 @@ public final class PropertiesImpl implements Properties {
   }
 
   /**
-   * Retrieve the PropertyInstance associated with the given PropertyKey.
+   * Get the PropertyInstance registered for the specified PropertyKey.
    *
    * @param key the property key to look up
-   * @return the PropertyInstance for the key, or `null` if no instance is registered
+   * @return the PropertyInstance for the key, or null if none is registered
    */
   @SuppressWarnings("unchecked")
   public <T> PropertyInstance<T> get(PropertyKey<T> key) {
@@ -56,10 +58,10 @@ public final class PropertiesImpl implements Properties {
   }
 
   /**
-   * Update the property identified by the given key with the provided value and return its instance.
+   * Set the value of the property identified by the given key.
    *
    * @param key   the property key identifying which property to update
-   * @param value the new value to set for the property
+   * @param value the new value for the property
    * @param <T>   the type of the property's value
    * @return      the PropertyInstance containing the updated value
    */
@@ -68,9 +70,9 @@ public final class PropertiesImpl implements Properties {
   }
 
   /**
-   * Gets the current value for the given property key.
+   * Retrieve the current value for the specified property key.
    *
-   * @param key the property key whose value to retrieve
+   * @param key the property key to read
    * @return the value associated with the specified key
    */
   public <T> T getValue(PropertyKey<T> key) {

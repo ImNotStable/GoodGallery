@@ -28,9 +28,9 @@ public final class Album extends GalleryItem {
   }
 
   /**
-   * Create an Album initialized with the given unique identifier and serialized properties.
+   * Initialize an Album with the specified unique identifier and serialized properties.
    *
-   * @param uniqueId the unique identifier for the album
+   * @param uniqueId the album's unique identifier
    * @param serializedProperties persisted properties used to initialize the album's state
    */
   Album(UUID uniqueId, SerializedProperties serializedProperties) {
@@ -38,18 +38,18 @@ public final class Album extends GalleryItem {
   }
 
   /**
-   * Creates an Album initialized with the default property keys.
+   * Constructs an Album initialized with the class's default property keys.
    *
-   * <p>Package-private no-argument constructor that delegates to the superclass with DEFAULT_KEYS.</p>
+   * <p>Delegates to the superclass to register DEFAULT_KEYS.</p>
    */
   Album() {
     super(DEFAULT_KEYS);
   }
 
   /**
-   * Provide an unmodifiable view of the album's photos.
+   * Get an unmodifiable view of this album's photos.
    *
-   * @return an unmodifiable collection of Photo objects containing the album's photos
+   * @return an unmodifiable collection containing the album's Photo objects
    */
   public Collection<Photo> getPhotos() {
     return Collections.unmodifiableCollection(getProperties().getValue(Properties.PHOTOS_KEY));

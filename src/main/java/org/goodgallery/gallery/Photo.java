@@ -18,11 +18,11 @@ public final class Photo extends GalleryItem {
   };
 
   /**
-   * Create a Photo with the given unique identifier and serialized properties.
+   * Create a Photo initialized with the specified unique identifier and serialized properties.
    *
-   * @param uniqueId             the unique identifier to assign to the Photo
-   * @param serializedProperties the serialized properties used to initialize the Photo
-   * @return                      the created Photo initialized with the provided identifier and properties
+   * @param uniqueId the unique identifier for the Photo
+   * @param serializedProperties serialized property values used to initialize the Photo
+   * @return a Photo initialized with the given identifier and properties
    */
   public static Photo create(UUID uniqueId, SerializedProperties serializedProperties) {
     return new Photo(uniqueId, serializedProperties);
@@ -39,7 +39,7 @@ public final class Photo extends GalleryItem {
   }
 
   /**
-   * Constructs a Photo initialized with the default property keys.
+   * Package-private no-argument constructor that initializes the Photo with the class's default property keys.
    */
   Photo() {
     super(DEFAULT_KEYS);
@@ -55,9 +55,9 @@ public final class Photo extends GalleryItem {
   }
 
   /**
-   * Returns the file-name portion of this photo's path.
+   * Retrieve the file-name portion of this photo's path.
    *
-   * @return the file name portion of the path as a String
+   * @return the file name portion of the photo's path
    */
   public String getFileName() {
     return getPath().getFileName().toString();

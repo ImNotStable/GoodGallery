@@ -16,7 +16,9 @@ public final class PhotoCollection {
   private final Map<String, Photo> photosByName;
 
   /**
-   * Creates an empty PhotoCollection with concurrent indices for lookup by UUID, file path, and name.
+   * Constructs an empty PhotoCollection with concurrent indices for lookup by UUID, filesystem path, and name.
+   *
+   * Each index (UUID, path, and name) is initialized as an empty ConcurrentHashMap.
    */
   public PhotoCollection() {
     photosByUUID = new ConcurrentHashMap<>();
@@ -78,6 +80,11 @@ public final class PhotoCollection {
     return photosByName.get(name);
   }
 
+  /**
+   * Remove the specified photo from the collection and all lookup indices.
+   *
+   * @param photo the Photo to remove; entries keyed by its UUID, filesystem path, and name will be deleted
+   */
   public void remove(Photo photo) {
     photosByUUID.remove(photo.getUniqueId());
     photosByPath.remove(photo.getPath());

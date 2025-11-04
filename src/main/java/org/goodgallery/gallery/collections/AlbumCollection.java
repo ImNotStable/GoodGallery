@@ -22,10 +22,10 @@ public final class AlbumCollection {
   }
 
   /**
-   * Create and add a new Album to the collection using the provided UUID and serialized properties.
+   * Create a new Album from serialized properties and add it to the collection.
    *
-   * @param uniqueId            the UUID to assign to the new album
-   * @param serializedProperties serialized data used to initialize the album's properties
+   * @param uniqueId             UUID to assign to the new album
+   * @param serializedProperties serialized properties used to initialize the album
    */
   public void createAlbum(UUID uniqueId, SerializedProperties serializedProperties) {
     add(Album.create(uniqueId, serializedProperties));
@@ -65,6 +65,13 @@ public final class AlbumCollection {
     return albumsByName.get(name);
   }
 
+  /**
+   * Removes the specified album from the collection's indices.
+   *
+   * Removes the entries keyed by the album's UUID and by its name; has no effect if either key is absent.
+   *
+   * @param album the album to remove from the collection
+   */
   public void remove(Album album) {
     albumsByUUID.remove(album.getUniqueId());
     albumsByName.remove(album.getName());

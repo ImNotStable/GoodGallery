@@ -14,7 +14,7 @@ Properties getProperties();
    *
    * @param <T> the type of the property value
    * @param key the typed key identifying the property
-   * @return the value for the given key, the key's default value if the property is not present, or `null` if no Properties instance is available
+   * @return the value for the given key, the key's default value if the property is not present, or null if no Properties instance is available
    */
   default <T> T getPropertyValue(PropertyKey<T> key) {
     Properties properties = getProperties();

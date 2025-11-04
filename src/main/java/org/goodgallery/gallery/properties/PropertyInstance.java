@@ -6,10 +6,10 @@ public final class PropertyInstance<T> {
   private T value;
 
   /**
-   * Creates a PropertyInstance that holds the given property key and its associated value.
+   * Creates a new PropertyInstance with the specified property key and initial value.
    *
    * @param key   the PropertyKey that identifies this property
-   * @param value the value for the property
+   * @param value the initial value for the property
    */
   public PropertyInstance(PropertyKey<T> key, T value) {
     this.key = key;
@@ -17,9 +17,9 @@ public final class PropertyInstance<T> {
   }
 
   /**
-   * Produce a byte array representation of this instance's value using the property's key serializer.
+   * Produces a serialized representation of this instance's value using the associated property's serializer.
    *
-   * @return a byte array containing the serialized representation of the property's current value
+   * @return a byte[] containing the serialized representation of the current property value
    */
   public byte[] serialize() {
     return key.serialize(value);
@@ -38,6 +38,12 @@ public final class PropertyInstance<T> {
     return value;
   }
 
+  /**
+   * Set the property's value and return this instance.
+   *
+   * @param value the new property value to store
+   * @return this PropertyInstance instance with its value set to the provided value
+   */
   public PropertyInstance<T> value(T value) {
     this.value = value;
     return this;

@@ -24,8 +24,8 @@ public final class GroupCollection {
   /**
    * Create a Group from the provided serialized properties and add it to this collection.
    *
-   * @param uniqueId             the UUID to assign to the created Group
-   * @param serializedProperties serialized data used to construct the Group
+   * @param uniqueId the UUID to assign to the created Group
+   * @param serializedProperties serialized data used to construct the Group; the resulting Group will be added to and indexed by this collection
    */
   public void createGroup(UUID uniqueId, SerializedProperties serializedProperties) {
     add(Group.create(uniqueId, serializedProperties));
@@ -68,6 +68,13 @@ public final class GroupCollection {
     return groupsByName.get(name);
   }
 
+  /**
+   * Remove the specified Group from the collection.
+   *
+   * Removes entries for the group's UUID and name from the internal indexes.
+   *
+   * @param group the Group whose UUID and name will be removed from the collection
+   */
   public void remove(Group group) {
     groupsByUUID.remove(group.getUniqueId());
     groupsByName.remove(group.getName());
