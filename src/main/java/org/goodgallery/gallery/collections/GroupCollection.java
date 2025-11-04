@@ -1,6 +1,5 @@
 package org.goodgallery.gallery.collections;
 
-import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.properties.SerializedProperties;
 

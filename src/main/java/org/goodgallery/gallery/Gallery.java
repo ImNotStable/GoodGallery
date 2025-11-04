@@ -68,28 +68,26 @@ public final class Gallery {
 
   public Group createGroup(String name) {
     Group group = new Group();
-    galleryData.addGroup(group);
+    galleryData.add(group);
     updateProperty(group, PropertiesImpl.NAME_KEY, name);
     groups.add(group);
     return group;
   }
 
   public void deleteGroup(Group group) {
-    galleryData.deleteGroup(group);
+    galleryData.delete(group);
     groups.remove(group);
   }
 
   public void addAlbumToGroup(Album album, Group group) {
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
     Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
-
     mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.add(album));
   }
 
   public void removeAlbumFromGroup(Album album, Group group) {
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
     Preconditions.checkState(groups.has(group), "Group \"%s\" does not exist", group.getName());
-
     mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.remove(album));
   }
 
@@ -111,28 +109,26 @@ public final class Gallery {
 
   public Album createAlbum(String name) {
     Album album = new Album();
-    galleryData.addAlbum(album);
+    galleryData.add(album);
     updateProperty(album, PropertiesImpl.NAME_KEY, name);
     albums.add(album);
     return album;
   }
 
   public void deleteAlbum(Album album) {
-    galleryData.deleteAlbum(album);
+    galleryData.delete(album);
     albums.remove(album);
   }
 
   public void addPhotoToAlbum(Photo photo, Album album) {
     Preconditions.checkState(photos.has(photo), "Photo \"%s\" does not exist", photo.getName());
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
-
     mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.add(photo));
   }
 
   public void removePhotoFromAlbum(Photo photo, Album album) {
     Preconditions.checkState(photos.has(photo), "Photo \"%s\" does not exist", photo.getName());
     Preconditions.checkState(albums.has(album), "Album \"%s\" does not exist", album.getName());
-
     mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.remove(photo));
   }
 
@@ -168,7 +164,7 @@ public final class Gallery {
     Files.copy(originalPath, newPath, StandardCopyOption.COPY_ATTRIBUTES);
 
     Photo photo = new Photo();
-    galleryData.addPhoto(photo);
+    galleryData.add(photo);
     updateProperty(photo, PropertiesImpl.PATH_KEY, newPath);
     photos.add(photo);
 
@@ -182,7 +178,7 @@ public final class Gallery {
   }
 
   public void deletePhoto(Photo photo) throws IOException {
-    galleryData.deletePhoto(photo);
+    galleryData.delete(photo);
     photos.remove(photo);
     Files.deleteIfExists(photo.getPropertyValue(PropertiesImpl.PATH_KEY));
   }

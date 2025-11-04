@@ -23,7 +23,7 @@ public class Main {
   private static final Path GALLERY_PATH = Paths.get("./gallery");
 
   @SuppressWarnings("resource")
-  public static void main(String[] args) {
+  static void main() {
     Gallery gallery = GalleryInstance.init(GALLERY_PATH);
     CommandDispatcher dispatcher = new CommandDispatcher();
 

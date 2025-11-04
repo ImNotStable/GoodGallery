@@ -2,7 +2,6 @@ package org.goodgallery.gallery;
 
 import lombok.Getter;
 import org.goodgallery.gallery.properties.Properties;
-import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyKey;
 import org.goodgallery.gallery.properties.SerializedProperties;
 

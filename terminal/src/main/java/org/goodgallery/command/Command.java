@@ -15,7 +15,6 @@ public final class Command {
   }
 
   private final String command;
-
   private final Set<? extends InternalArgument<?>> arguments;
   private final Consumer<CommandContext> executable;
 

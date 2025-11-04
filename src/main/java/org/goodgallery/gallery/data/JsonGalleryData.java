@@ -44,9 +44,9 @@ public final class JsonGalleryData extends AbstractGalleryData {
       json.add("groups", new JsonObject());
       json.add("albums", new JsonObject());
       json.add("photos", new JsonObject());
-      save();
-    } else
+    } else {
       this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
+    }
 
     Runtime.getRuntime().addShutdownHook(new Thread(this::save));
   }
@@ -63,19 +63,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public void addGroup(Group group) {
-    JsonObject groups = json.getAsJsonObject("groups");
-    groups.add(group.toString(), new JsonObject());
-    save();
-  }
-
-  @Override
-  public void deleteGroup(Group group) {
-    json.getAsJsonObject("groups").remove(group.toString());
-    save();
-  }
-
-  @Override
   public void loadAlbums(AlbumCollection albums) {
     JsonObject albumsJson = json.getAsJsonObject("albums");
     for (String key : albumsJson.keySet()) {
@@ -83,19 +70,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
       SerializedProperties serializedProperties = SerializedProperties.create(GSON, albumJson);
       albums.createAlbum(UUID.fromString(key), serializedProperties);
     }
-  }
-
-  @Override
-  public void addAlbum(Album album) {
-    JsonObject albums = json.getAsJsonObject("albums");
-    albums.add(album.toString(), new JsonObject());
-    save();
-  }
-
-  @Override
-  public void deleteAlbum(Album album) {
-    json.getAsJsonObject("albums").remove(album.toString());
-    save();
   }
 
   @Override
@@ -109,22 +83,18 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  public void addPhoto(Photo photo) {
-    JsonObject photoJson = new JsonObject();
-    json.getAsJsonObject("photos").add(photo.toString(), photoJson);
-    save();
+  public void add(PropertyHolder propertyHolder) {
+    getParent(propertyHolder).add(propertyHolder.toString(), new JsonObject());
   }
 
   @Override
-  public void deletePhoto(Photo photo) {
-    json.getAsJsonObject("photos").remove(photo.toString());
-    save();
+  public void delete(PropertyHolder propertyHolder) {
+    getParent(propertyHolder).remove(propertyHolder.toString());
   }
 
   @Override
   public void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property) {
     findProperties(propertyHolder).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class));
-    save();
   }
 
   @Override
@@ -136,9 +106,19 @@ public final class JsonGalleryData extends AbstractGalleryData {
     }
   }
 
+  private JsonObject getParent(PropertyHolder propertyHolder) {
+    return json.getAsJsonObject(
+      switch (propertyHolder) {
+        case Photo ignored -> "photos";
+        case Album ignored -> "albums";
+        case Group ignored -> "groups";
+        default -> throw new IllegalStateException();
+      }
+    );
+  }
+
   private JsonObject findProperties(@NotNull PropertyHolder propertyHolder) {
-    return json.getAsJsonObject(propertyHolder.getClass().getSimpleName().toLowerCase() + "s")
-      .getAsJsonObject(propertyHolder.toString());
+    return getParent(propertyHolder).getAsJsonObject(propertyHolder.toString());
   }
 
 }

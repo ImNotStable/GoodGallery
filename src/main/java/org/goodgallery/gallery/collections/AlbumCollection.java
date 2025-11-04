@@ -1,7 +1,6 @@
 package org.goodgallery.gallery.collections;
 
 import org.goodgallery.gallery.Album;
-import org.goodgallery.gallery.Photo;
 import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.util.Collection;
