@@ -64,8 +64,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
     } else {
       this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
     }
-
-    Runtime.getRuntime().addShutdownHook(new Thread(this::save));
   }
 
   /**
