@@ -84,26 +84,73 @@ public interface Properties {
       return albums;
     }).defaultProvider(_ -> new HashSet<>());
 
-  <T> T getValue(PropertyKey<T> key);
+  /**
+ * Retrieve the value associated with a property key.
+ *
+ * @param key the property key to look up
+ * @return the value associated with the key, or {@code null} if no value is present
+ */
+<T> T getValue(PropertyKey<T> key);
 
+  /**
+   * Retrieve the value associated with the given property key, falling back to the key's default value when absent.
+   *
+   * @param key the property key whose value to obtain
+   * @return the value associated with {@code key}, or the default value provided by {@code key} when the stored value is null
+   */
   default <T> T getValueOrDefault(PropertyKey<T> key) {
     return getValueOrDefault(key, key.getDefaultValue(this));
   }
 
+  /**
+   * Retrieve the value associated with the given property key, returning the provided default when no value is present.
+   *
+   * @param key the property key to look up
+   * @param defaultValue the value to return when the property's value is null or absent
+   * @return the property's value if non-null, otherwise `defaultValue`
+   */
   default <T> T getValueOrDefault(PropertyKey<T> key, T defaultValue) {
     T value = getValue(key);
     return value != null ? value : defaultValue;
   }
 
+  /**
+   * Applies the given transformer to the value associated with the specified property key and returns the transformed result.
+   *
+   * @param <T> the type of the stored property value
+   * @param <O> the type of the transformed result
+   * @param key the property key whose value will be transformed
+   * @param transformer the transformer to apply to the property's value
+   * @return the transformed value, or `null` if the property is not present or if the transformation fails
+   */
   default <T, O> O getTransformedValue(PropertyKey<T> key, Transformer<T, O> transformer) {
     return getTransformedValueOrDefault(key, transformer, null);
   }
 
+  /**
+   * Applies the given transformer to the property's value (using the key's default when the value is absent) and returns the transformed result.
+   *
+   * @param key the property key whose value will be obtained or defaulted
+   * @param transformer function that maps the property's value to the desired result
+   * @param <T> the type of the stored property value
+   * @param <O> the type of the transformed result
+   * @return the result of applying `transformer` to the property's value (or the key's default value)
+   */
   default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer) {
     T value = getValueOrDefault(key);
     return transformer.apply(value);
   }
 
+  /**
+   * Apply a transformer to the property value associated with the given key, or return a fallback.
+   *
+   * @param <T> the property value type
+   * @param <O> the result type produced by the transformer
+   * @param key the property key whose value will be obtained
+   * @param transformer a function that maps the property value to the desired result
+   * @param defaultValue the value to return if the property is absent or if transformation fails
+   * @return the transformed value when the property exists and transformation succeeds, otherwise `defaultValue`
+   */
   default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer, O defaultValue) {
     T value = getValue(key);
     try {

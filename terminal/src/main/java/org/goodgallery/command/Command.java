@@ -10,6 +10,12 @@ import java.util.stream.Collectors;
 
 public final class Command {
 
+  /**
+   * Create a builder for a command with the specified name.
+   *
+   * @param command the name of the command to build
+   * @return a new {@link Builder} initialized with the given command name
+   */
   public static Builder builder(String command) {
     return new Builder(command);
   }

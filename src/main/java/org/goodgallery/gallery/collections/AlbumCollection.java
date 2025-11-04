@@ -13,15 +13,29 @@ public final class AlbumCollection {
   private final Map<UUID, Album> albumsByUUID;
   private final Map<String, Album> albumsByName;
 
+  /**
+   * Constructs a new AlbumCollection with empty thread-safe maps for indexing albums by UUID and by name.
+   */
   public AlbumCollection() {
     albumsByUUID = new ConcurrentHashMap<>();
     albumsByName = new ConcurrentHashMap<>();
   }
 
+  /**
+   * Create and add a new Album to the collection using the provided UUID and serialized properties.
+   *
+   * @param uniqueId            the UUID to assign to the new album
+   * @param serializedProperties serialized data used to initialize the album's properties
+   */
   public void createAlbum(UUID uniqueId, SerializedProperties serializedProperties) {
     add(Album.create(uniqueId, serializedProperties));
   }
 
+  /**
+   * Adds the album to the collection and indexes it by both unique ID and name.
+   *
+   * @param album the Album to add; if an album with the same UUID or name already exists it will be replaced
+   */
   public void add(Album album) {
     albumsByUUID.put(album.getUniqueId(), album);
     albumsByName.put(album.getName(), album);
