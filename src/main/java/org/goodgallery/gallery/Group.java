@@ -28,10 +28,10 @@ public final class Group extends GalleryItem {
   }
 
   /**
-   * Creates a Group with the given unique identifier and serialized properties.
+   * Initialize a Group with the specified UUID and serialized properties.
    *
-   * @param uniqueId the group's UUID
-   * @param serializedProperties serialized property values used to initialize the group
+   * @param uniqueId            unique identifier for the group
+   * @param serializedProperties serialized property values used to initialize the group's properties
    */
   Group(UUID uniqueId, SerializedProperties serializedProperties) {
     super(uniqueId, serializedProperties, DEFAULT_KEYS);
@@ -45,11 +45,9 @@ public final class Group extends GalleryItem {
   }
 
   /**
-   * Get the albums contained in this group.
+   * Retrieve the albums contained in this group.
    *
-   * The returned collection is unmodifiable and represents the group's stored albums.
-   *
-   * @return an unmodifiable Collection of Album objects in this group
+   * @return an unmodifiable collection of the group's Album objects
    */
   public Collection<Album> getAlbums() {
     return Collections.unmodifiableCollection(getProperties().getValue(Properties.ALBUMS_KEY));

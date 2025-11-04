@@ -43,11 +43,11 @@ public final class JsonGalleryData extends AbstractGalleryData {
   private final JsonObject json;
 
   /**
-   * Initializes a JsonGalleryData instance backed by a gallery.json file in the given directory.
+   * Constructs a JsonGalleryData backed by a gallery.json file in the given directory.
    *
-   * <p>If the file does not exist it is created and an empty JSON store with "groups", "albums",
-   * and "photos" sections is initialized; if the file exists it is loaded into memory. A JVM
-   * shutdown hook is registered to persist the in-memory JSON by calling save().
+   * <p>If the file does not exist, it is created and an empty JSON store with "groups", "albums",
+   * and "photos" sections is initialized; if the file exists, it is loaded into memory. A JVM
+   * shutdown hook is registered to persist the in-memory JSON by calling {@link #save()}.
    *
    * @param path the directory in which to resolve and manage the gallery.json file
    * @throws IOException if the gallery.json file cannot be created or read
@@ -103,10 +103,10 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Populates the provided collection with Photo instances reconstructed from the in-memory JSON store.
+   * Load photos from the in-memory JSON store into the provided PhotoCollection.
    *
-   * Iterates the stored photo entries, parses each entry's UUID key, converts its JSON object into
-   * SerializedProperties, and creates a corresponding photo in the given collection.
+   * Each stored entry's UUID key is parsed and its JSON object is converted to SerializedProperties
+   * before creating the corresponding photo in the collection.
    *
    * @param photos the collection to populate with photos loaded from the JSON data store
    */
@@ -121,9 +121,9 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Add a new empty JSON entry for the given PropertyHolder in the appropriate parent section.
+   * Create an empty JSON object for the given PropertyHolder in its corresponding top-level section.
    *
-   * @param propertyHolder the holder (Group, Album, or Photo) whose string key will be used to create an empty JsonObject entry in the corresponding parent ("groups", "albums", or "photos")
+   * @param propertyHolder the holder whose string key is used to create the new empty entry in the appropriate section ("groups", "albums", or "photos")
    */
   @Override
   public void add(PropertyHolder propertyHolder) {
@@ -142,9 +142,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Store or update the given property's serialized value in this gallery's JSON store for the specified holder.
-   *
-   * Serializes the property's value and places it under the property's key in the holder's properties object.
+   * Persist the serialized value of a property into the gallery JSON for the given holder.
    *
    * @param propertyHolder the target holder (group, album, or photo) whose properties will be updated
    * @param property       the property instance whose serialized value will be stored under its key
@@ -155,9 +153,9 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Persist the in-memory JSON representation to the configured gallery.json file.
+   * Persist the in-memory gallery JSON to the configured gallery.json file.
    *
-   * @throws RuntimeException if an I/O error prevents writing the file
+   * @throws RuntimeException if writing the file fails due to an I/O error
    */
   @Override
   protected void save() {
@@ -187,10 +185,10 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Locate the JSON object that stores properties for the given PropertyHolder.
+   * Retrieve the JsonObject that stores the given holder's properties within its top-level section.
    *
-   * @param propertyHolder the property holder whose property map should be retrieved
-   * @return the JsonObject associated with the holder's string key inside its parent section
+   * @param propertyHolder the holder whose properties object to retrieve
+   * @return the JsonObject containing the holder's properties (located at the holder's string key in the parent section)
    */
   private JsonObject findProperties(@NotNull PropertyHolder propertyHolder) {
     return getParent(propertyHolder).getAsJsonObject(propertyHolder.toString());

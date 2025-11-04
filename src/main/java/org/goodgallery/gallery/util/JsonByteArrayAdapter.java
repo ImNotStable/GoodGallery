@@ -31,10 +31,10 @@ public class JsonByteArrayAdapter implements JsonSerializer<byte[]>, JsonDeseria
   }
 
   /**
-   * Converts a byte array into a JSON string element.
+   * Produce a JSON string representation of the given byte array.
    *
-   * @param src the byte array to convert; encoded to a Java String using the platform default charset
-   * @return a JsonPrimitive containing the resulting String
+   * @param src the bytes to decode into a string using the platform default charset
+   * @return a JsonPrimitive containing the decoded string
    */
   @Override
   public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {

@@ -16,11 +16,11 @@ public abstract class GalleryItem implements PropertyHolder {
   private final PropertiesImpl properties;
 
   /**
-   * Creates a GalleryItem with the given unique identifier and property state.
+   * Initializes this GalleryItem with the given unique identifier and property state.
    *
-   * @param uniqueId the UUID to assign to this item
-   * @param serializedProperties serialized properties to restore into the item's PropertiesImpl, or {@code null} to initialize with defaults
-   * @param defaultKeys property keys that should be present by default when creating the properties
+   * @param uniqueId the UUID to assign to the gallery item
+   * @param serializedProperties serialized state to restore into the item's properties, or {@code null} to initialize defaults
+   * @param defaultKeys property keys that should be present by default; may be {@code null}
    */
   protected GalleryItem(UUID uniqueId, SerializedProperties serializedProperties, PropertyKey<?>[] defaultKeys) {
     this.uniqueId = uniqueId;
@@ -55,9 +55,9 @@ public abstract class GalleryItem implements PropertyHolder {
   }
 
   /**
-   * Return the UUID string representation of this GalleryItem.
+   * Provide the item's UUID as a string.
    *
-   * @return the item's uniqueId as a string
+   * @return the item's UUID in string form
    */
   @Override
   public String toString() {

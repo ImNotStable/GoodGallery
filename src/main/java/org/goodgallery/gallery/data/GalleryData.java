@@ -44,10 +44,10 @@ void add(PropertyHolder propertyHolder);
 void delete(PropertyHolder propertyHolder);
 
   /**
- * Update the given property instance on the supplied property holder.
+ * Apply the given PropertyInstance's value to the specified PropertyHolder.
  *
- * @param propertyHolder the holder (for example a group, album, or photo) that contains the property to update
- * @param property the property instance containing the new value to apply to the holder
+ * @param propertyHolder the holder (for example, a group, album, or photo) whose property will be updated
+ * @param property the PropertyInstance containing the new value to set on the holder
  */
 void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property);
 

@@ -16,9 +16,7 @@ public abstract class AbstractGalleryData implements GalleryData, Closeable {
   private final ScheduledFuture<?> autoSaveFuture;
 
   /**
-   * Initializes a single-thread {@link java.util.concurrent.ScheduledExecutorService} and
-   * schedules a one-time execution of {@link #save()} to run after 1 second; the resulting
-   * {@code ScheduledFuture} is stored in {@code autoSaveFuture}.
+   * Creates a single-thread ScheduledExecutorService for background tasks and schedules a one-time invocation of {@link #save()} to run after one second; the resulting {@code ScheduledFuture} is stored in {@code autoSaveFuture}.
    */
   protected AbstractGalleryData() {
     this.executor = Executors.newSingleThreadScheduledExecutor();
@@ -33,10 +31,10 @@ public abstract class AbstractGalleryData implements GalleryData, Closeable {
 protected abstract void save();
 
   /**
-   * Cancels the scheduled auto-save task and waits for that task to complete.
+   * Cancel the scheduled auto-save (without interrupting a running save) and block until it completes.
    *
-   * <p>The method requests cancellation of the internal scheduled save and blocks until the
-   * scheduled future reports completion.</p>
+   * <p>The method requests cancellation of the internal scheduled save via {@code cancel(false)}
+   * and then waits until the associated {@code ScheduledFuture} reports completion.</p>
    *
    * @throws RuntimeException if the waiting thread is interrupted while awaiting task completion
    */

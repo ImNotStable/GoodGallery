@@ -128,13 +128,13 @@ public interface Properties {
   }
 
   /**
-   * Applies the given transformer to the property's value (using the key's default when the value is absent) and returns the transformed result.
+   * Applies the transformer to the property's value or, if absent, to the key's default and returns the transformed result.
    *
-   * @param key the property key whose value will be obtained or defaulted
-   * @param transformer function that maps the property's value to the desired result
+   * @param key the property key to obtain the value from
+   * @param transformer maps the property's value to the desired result
    * @param <T> the type of the stored property value
    * @param <O> the type of the transformed result
-   * @return the result of applying `transformer` to the property's value (or the key's default value)
+   * @return the transformed result produced by applying the transformer to the property's value or the key's default
    */
   default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer) {
     T value = getValueOrDefault(key);
