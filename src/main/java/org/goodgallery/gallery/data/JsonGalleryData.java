@@ -64,8 +64,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
     } else {
       this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
     }
-
-    Runtime.getRuntime().addShutdownHook(new Thread(this::save));
   }
 
   /**
@@ -128,6 +126,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   @Override
   public void add(PropertyHolder propertyHolder) {
     getParent(propertyHolder).add(propertyHolder.toString(), new JsonObject());
+    save();
   }
 
   /**
@@ -139,6 +138,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   @Override
   public void delete(PropertyHolder propertyHolder) {
     getParent(propertyHolder).remove(propertyHolder.toString());
+    save();
   }
 
   /**
@@ -150,6 +150,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   @Override
   public void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property) {
     findProperties(propertyHolder).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class));
+    save();
   }
 
   /**
