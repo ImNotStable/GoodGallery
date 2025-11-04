@@ -1,14 +1,9 @@
 package org.goodgallery.gallery.util;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 
 public class JsonByteArrayAdapter implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
 
@@ -16,7 +11,7 @@ public class JsonByteArrayAdapter implements JsonSerializer<byte[]>, JsonDeseria
    * Converts a JSON element into a byte array.
    *
    * <p>If the input is null, represents JSON null, or is an empty string, an empty byte array is returned.
-   * Otherwise the JSON element is interpreted as a string and its bytes (platform default charset) are returned.</p>
+   * Otherwise, the JSON element is interpreted as a string and its bytes (platform default charset) are returned.</p>
    *
    * @param json the JSON element to convert; expected to contain a string value
    * @param typeOfT unused type token for deserialization context
@@ -27,7 +22,7 @@ public class JsonByteArrayAdapter implements JsonSerializer<byte[]>, JsonDeseria
   public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
     if (json == null || json.isJsonNull() || json.getAsString().isEmpty())
       return new byte[0];
-    return json.getAsString().getBytes();
+    return json.getAsString().getBytes(StandardCharsets.UTF_8);
   }
 
   /**
@@ -38,7 +33,7 @@ public class JsonByteArrayAdapter implements JsonSerializer<byte[]>, JsonDeseria
    */
   @Override
   public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
-    return new JsonPrimitive(new String(src));
+    return new JsonPrimitive(new String(src, StandardCharsets.UTF_8));
   }
 
 }

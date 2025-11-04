@@ -45,7 +45,7 @@ public final class PropertyKey<T> {
   public T deserialize(byte[] serializedData) {
     try {
       return deserializer.apply(serializedData);
-    } catch (Throwable ignored) {
+    } catch (Exception ignored) {
       return null;
     }
   }

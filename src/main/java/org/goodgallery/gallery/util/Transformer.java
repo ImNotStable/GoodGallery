@@ -7,8 +7,8 @@ public interface Transformer<I, O> {
  *
  * @param input the value to transform
  * @return the transformed output
- * @throws Throwable if the transformation cannot be completed
+ * @throws Exception if the transformation cannot be completed
  */
-O transform(I input) throws Throwable;
+O transform(I input) throws Exception;
 
 }

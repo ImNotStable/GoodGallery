@@ -26,7 +26,7 @@ public final class Gallery {
 
   /**
    * Constructs a Gallery backed by the given filesystem path.
-   *
+   * <p>
    * The provided path is normalized to an absolute path and, if missing, the directory is created.
    * Persistent storage is initialized and existing photos, albums, and groups are loaded into memory.
    *
@@ -70,7 +70,7 @@ public final class Gallery {
 
   /**
    * Create a new group with the given name and register it in the gallery.
-   *
+   * <p>
    * The created group is persisted and added to the gallery's internal group collection.
    *
    * @param name the display name to assign to the new group
@@ -80,7 +80,6 @@ public final class Gallery {
     Group group = new Group();
     galleryData.add(group);
     updateProperty(group, PropertiesImpl.NAME_KEY, name);
-    galleryData.add(group);
     return group;
   }
 
@@ -162,7 +161,6 @@ public final class Gallery {
     Album album = new Album();
     galleryData.add(album);
     updateProperty(album, PropertiesImpl.NAME_KEY, name);
-    galleryData.add(album);
     return album;
   }
 
@@ -261,7 +259,6 @@ public final class Gallery {
     Photo photo = new Photo();
     galleryData.add(photo);
     updateProperty(photo, PropertiesImpl.PATH_KEY, newPath);
-    galleryData.add(photo);
 
     return photo;
   }
@@ -314,6 +311,10 @@ public final class Gallery {
     PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).get(key);
     mutator.accept(property.value());
     galleryData.updateProperty(propertyHolder, property);
+  }
+
+  public <T> T getPropertyValue(PropertyHolder propertyHolder, PropertyKey<T> key) {
+    return propertyHolder.getPropertyValue(key);
   }
 
 }
