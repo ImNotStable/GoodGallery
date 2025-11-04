@@ -6,9 +6,6 @@ import com.google.gson.JsonObject;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
-import org.goodgallery.gallery.collections.AlbumCollection;
-import org.goodgallery.gallery.collections.GroupCollection;
-import org.goodgallery.gallery.collections.PhotoCollection;
 import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.SerializedProperties;
@@ -67,64 +64,12 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   /**
-   * Populates the given GroupCollection with Group instances reconstructed from the in-memory JSON store.
-   *
-   * @param groups the collection to populate with groups loaded from this data store
-   */
-  @Override
-  public void loadGroups(GroupCollection groups) {
-    JsonObject groupsJson = json.getAsJsonObject("groups");
-
-    for (String key : groupsJson.keySet()) {
-      JsonObject groupJson = groupsJson.getAsJsonObject(key);
-      SerializedProperties serializedProperties = SerializedProperties.create(GSON, groupJson);
-      groups.createGroup(UUID.fromString(key), serializedProperties);
-    }
-  }
-
-  /**
-   * Populates the provided AlbumCollection with albums deserialized from the in-memory JSON store.
-   *
-   * For each entry in the "albums" JSON object, an Album is created using the entry's UUID key
-   * and the properties deserialized from the corresponding JSON object.
-   *
-   * @param albums the collection to populate with albums reconstructed from the JSON data
-   */
-  @Override
-  public void loadAlbums(AlbumCollection albums) {
-    JsonObject albumsJson = json.getAsJsonObject("albums");
-    for (String key : albumsJson.keySet()) {
-      JsonObject albumJson = albumsJson.getAsJsonObject(key);
-      SerializedProperties serializedProperties = SerializedProperties.create(GSON, albumJson);
-      albums.createAlbum(UUID.fromString(key), serializedProperties);
-    }
-  }
-
-  /**
-   * Load photos from the in-memory JSON store into the provided PhotoCollection.
-   *
-   * Each stored entry's UUID key is parsed and its JSON object is converted to SerializedProperties
-   * before creating the corresponding photo in the collection.
-   *
-   * @param photos the collection to populate with photos loaded from the JSON data store
-   */
-  @Override
-  public void loadPhotos(PhotoCollection photos) {
-    JsonObject photosJson = json.getAsJsonObject("photos");
-
-    for (String key : photosJson.keySet()) {
-      SerializedProperties serializedProperties = SerializedProperties.create(GSON, photosJson.getAsJsonObject(key));
-      photos.createPhoto(UUID.fromString(key), serializedProperties);
-    }
-  }
-
-  /**
    * Create an empty JSON object for the given PropertyHolder in its corresponding top-level section.
    *
    * @param propertyHolder the holder whose string key is used to create the new empty entry in the appropriate section ("groups", "albums", or "photos")
    */
   @Override
-  public void add(PropertyHolder propertyHolder) {
+  protected void insert(PropertyHolder propertyHolder) {
     getParent(propertyHolder).add(propertyHolder.toString(), new JsonObject());
     save();
   }
@@ -136,7 +81,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
    * @throws IllegalStateException if the holder's type is not recognized (not group, album, or photo)
    */
   @Override
-  public void delete(PropertyHolder propertyHolder) {
+  protected void delete(PropertyHolder propertyHolder) {
     getParent(propertyHolder).remove(propertyHolder.toString());
     save();
   }
@@ -151,6 +96,31 @@ public final class JsonGalleryData extends AbstractGalleryData {
   public void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property) {
     findProperties(propertyHolder).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class));
     save();
+  }
+
+  @Override
+  protected void load() {
+    JsonObject photosJson = json.getAsJsonObject("photos");
+
+    for (String key : photosJson.keySet()) {
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, photosJson.getAsJsonObject(key));
+      createPhoto(UUID.fromString(key), serializedProperties);
+    }
+
+
+    JsonObject albumsJson = json.getAsJsonObject("albums");
+    for (String key : albumsJson.keySet()) {
+      JsonObject albumJson = albumsJson.getAsJsonObject(key);
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, albumJson);
+      createAlbum(UUID.fromString(key), serializedProperties);
+    }
+
+    JsonObject groupsJson = json.getAsJsonObject("groups");
+    for (String key : groupsJson.keySet()) {
+      JsonObject groupJson = groupsJson.getAsJsonObject(key);
+      SerializedProperties serializedProperties = SerializedProperties.create(GSON, groupJson);
+      createGroup(UUID.fromString(key), serializedProperties);
+    }
   }
 
   /**
