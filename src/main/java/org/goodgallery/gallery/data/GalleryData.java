@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface GalleryData {
 
   default void createPhoto(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(Photo.create(uniqueId, serializedProperties));
+    add(new Photo(uniqueId, serializedProperties));
   }
 
   void add(Photo photo);
@@ -38,7 +38,7 @@ public interface GalleryData {
   void remove(Photo photo);
 
   default void createAlbum(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(Album.create(uniqueId, serializedProperties));
+    add(new Album(uniqueId, serializedProperties));
   }
 
   void add(Album album);
@@ -58,7 +58,7 @@ public interface GalleryData {
   void remove(Album album);
 
   default void createGroup(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(Group.create(uniqueId, serializedProperties));
+    add(new Group(uniqueId, serializedProperties));
   }
 
   void add(Group group);
@@ -77,12 +77,6 @@ public interface GalleryData {
 
   void remove(Group group);
 
-  /**
-   * Apply the given PropertyInstance's value to the specified PropertyHolder.
-   *
-   * @param propertyHolder the holder (for example, a group, album, or photo) whose property will be updated
-   * @param property       the PropertyInstance containing the new value to set on the holder
-   */
   void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property);
 
 }

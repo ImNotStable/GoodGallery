@@ -17,48 +17,18 @@ public final class Photo extends GalleryItem {
     Properties.PATH_KEY, Properties.NAME_KEY, Properties.CREATION_TIMESTAMP_KEY
   };
 
-  /**
-   * Create a Photo initialized with the specified unique identifier and serialized properties.
-   *
-   * @param uniqueId the unique identifier for the Photo
-   * @param serializedProperties serialized property values used to initialize the Photo
-   * @return a Photo initialized with the given identifier and properties
-   */
-  public static Photo create(UUID uniqueId, SerializedProperties serializedProperties) {
-    return new Photo(uniqueId, serializedProperties);
-  }
-
-  /**
-   * Constructs a Photo initialized with the given unique identifier and serialized properties.
-   *
-   * @param uniqueId the UUID that uniquely identifies this photo
-   * @param serializedProperties the serialized properties used to initialize the photo's state
-   */
-  Photo(UUID uniqueId, SerializedProperties serializedProperties) {
+  public Photo(UUID uniqueId, SerializedProperties serializedProperties) {
     super(uniqueId, serializedProperties, DEFAULT_KEYS);
   }
 
-  /**
-   * Package-private no-argument constructor that initializes the Photo with the class's default property keys.
-   */
   Photo() {
     super(DEFAULT_KEYS);
   }
 
-  /**
-   * Retrieves the filesystem path of this photo.
-   *
-   * @return the Path representing the photo's filesystem location.
-   */
   public Path getPath() {
     return getPropertyValue(PATH_KEY);
   }
 
-  /**
-   * Retrieve the file-name portion of this photo's path.
-   *
-   * @return the file name portion of the photo's path
-   */
   public String getFileName() {
     return getPath().getFileName().toString();
   }

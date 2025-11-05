@@ -22,13 +22,6 @@ public class Main {
 
   private static final Path GALLERY_PATH = Paths.get("./gallery");
 
-  /**
-   * Initialize application state and register console commands for interactive use.
-   *
-   * Sets up the Gallery using GALLERY_PATH, creates a CommandDispatcher, and registers
-   * the "photos", "albums", and "exit" command groups for listing, viewing and managing
-   * photos and albums, and terminating the application.
-   */
   @SuppressWarnings("resource")
   static void main() {
     Gallery gallery = GalleryInstance.init(GALLERY_PATH);

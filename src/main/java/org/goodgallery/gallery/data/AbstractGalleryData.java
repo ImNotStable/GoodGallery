@@ -39,18 +39,8 @@ public abstract class AbstractGalleryData implements GalleryData {
 
   protected abstract void load();
 
-  /**
-   * Adds the given PropertyHolder to the gallery data model.
-   *
-   * @param propertyHolder the property holder to add to the data model
-   */
   protected abstract void insert(PropertyHolder propertyHolder);
 
-  /**
-   * Removes the given property holder from the gallery data model.
-   *
-   * @param propertyHolder the property holder to remove
-   */
   protected abstract void delete(PropertyHolder propertyHolder);
 
   public void add(Photo photo) {
@@ -171,11 +161,6 @@ public abstract class AbstractGalleryData implements GalleryData {
     groupsByName.remove(group.getName());
   }
 
-  /**
- * Persist the gallery's current state to permanent storage.
- *
- * Implementations should perform any necessary synchronization and ensure the saved state is durable.
- */
   protected abstract void save();
 
 }
