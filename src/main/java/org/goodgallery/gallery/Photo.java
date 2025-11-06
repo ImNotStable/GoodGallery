@@ -8,8 +8,6 @@ import org.goodgallery.gallery.properties.SerializedProperties;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import static org.goodgallery.gallery.properties.PropertiesImpl.PATH_KEY;
-
 @Getter
 public final class Photo extends GalleryItem {
 
@@ -26,7 +24,7 @@ public final class Photo extends GalleryItem {
   }
 
   public Path getPath() {
-    return getPropertyValue(PATH_KEY);
+    return getPropertyValue(Properties.PATH_KEY);
   }
 
   public String getFileName() {

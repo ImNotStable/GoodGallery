@@ -37,6 +37,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
       json.add("groups", new JsonObject());
       json.add("albums", new JsonObject());
       json.add("photos", new JsonObject());
+      save();
     } else {
       this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
     }

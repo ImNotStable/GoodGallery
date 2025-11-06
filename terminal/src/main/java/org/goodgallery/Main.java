@@ -7,7 +7,7 @@ import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Gallery;
 import org.goodgallery.gallery.GalleryInstance;
 import org.goodgallery.gallery.Photo;
-import org.goodgallery.gallery.properties.PropertiesImpl;
+import org.goodgallery.gallery.properties.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -32,7 +32,7 @@ public class Main {
         .executes(context -> {
           context.out().printf("Photos (%d):%n", gallery.getPhotos().size());
           for (Photo photo : gallery.getPhotos())
-            context.out().printf(" - %s (%s)%n", photo.getPropertyValue(PropertiesImpl.NAME_KEY), photo.getFileName());
+            context.out().printf(" - %s (%s)%n", photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName());
         })
       )
       .then(Argument.literal("copy")
@@ -84,7 +84,7 @@ public class Main {
             .executes(context -> {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
-              gallery.updateProperty(photo, PropertiesImpl.NAME_KEY, newName);
+              gallery.updateProperty(photo, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )
@@ -139,7 +139,7 @@ public class Main {
             context.out().printf(" - %s%n%s",
               album.getName(),
               album.getPhotos().stream()
-                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(PropertiesImpl.NAME_KEY), photo.getFileName()))
+                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName()))
                 .collect(Collectors.joining("%n"))
               );
         })
@@ -159,7 +159,7 @@ public class Main {
             .executes(context -> {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
-              gallery.updateProperty(album, PropertiesImpl.NAME_KEY, newName);
+              gallery.updateProperty(album, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )

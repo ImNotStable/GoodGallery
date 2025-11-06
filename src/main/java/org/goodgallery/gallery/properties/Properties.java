@@ -6,6 +6,7 @@ import org.goodgallery.gallery.Photo;
 import org.goodgallery.gallery.util.Transformer;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -17,13 +18,13 @@ import java.util.function.Function;
 public interface Properties {
 
   PropertyKey<Path> PATH_KEY = new PropertyKey<>("path",
-    path -> path.toString().getBytes(),
+    path -> path.toString().getBytes(StandardCharsets.UTF_8),
     data -> Path.of(new String(data))
   );
 
   PropertyKey<String> NAME_KEY = new PropertyKey<>("name",
-    String::getBytes,
-    String::new
+    name -> name.getBytes(StandardCharsets.UTF_8),
+    data -> new String(data, StandardCharsets.UTF_8)
   ).defaultProvider(
     properties -> properties.getTransformedValue(PATH_KEY, path -> path.getFileName().toString())
   );

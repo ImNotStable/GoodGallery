@@ -1,7 +1,11 @@
 package org.goodgallery.gallery;
 
 import lombok.Getter;
-import org.goodgallery.gallery.properties.*;
+import org.goodgallery.gallery.properties.Properties;
+import org.goodgallery.gallery.properties.PropertiesImpl;
+import org.goodgallery.gallery.properties.PropertyHolder;
+import org.goodgallery.gallery.properties.PropertyKey;
+import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.util.UUID;
 
@@ -25,7 +29,7 @@ public abstract class GalleryItem implements PropertyHolder {
   }
 
   public String getName() {
-    return getPropertyValue(PropertiesImpl.NAME_KEY);
+    return getPropertyValue(Properties.NAME_KEY);
   }
 
   @Override

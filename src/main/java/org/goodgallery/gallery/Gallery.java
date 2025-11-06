@@ -143,7 +143,7 @@ public final class Gallery {
 
     Photo photo = new Photo();
     galleryData.add(photo);
-    updateProperty(photo, PropertiesImpl.PATH_KEY, newPath);
+    updateProperty(photo, Properties.PATH_KEY, newPath);
 
     return photo;
   }
@@ -156,7 +156,7 @@ public final class Gallery {
 
   public void deletePhoto(Photo photo) throws IOException {
     galleryData.remove(photo);
-    Files.deleteIfExists(photo.getPropertyValue(PropertiesImpl.PATH_KEY));
+    Files.deleteIfExists(photo.getPropertyValue(Properties.PATH_KEY));
   }
 
   public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {

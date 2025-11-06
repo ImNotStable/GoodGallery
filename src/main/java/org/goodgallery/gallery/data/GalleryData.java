@@ -19,7 +19,9 @@ public interface GalleryData {
 
   void add(Photo photo);
 
-  boolean hasPhoto(Photo photo);
+  default boolean hasPhoto(Photo photo) {
+    return hasPhoto(photo.getUniqueId());
+  }
 
   boolean hasPhoto(UUID uniqueId);
 
@@ -43,7 +45,9 @@ public interface GalleryData {
 
   void add(Album album);
 
-  boolean hasAlbum(Album album);
+  default boolean hasAlbum(Album album) {
+    return hasAlbum(album.getUniqueId());
+  }
 
   boolean hasAlbum(UUID uniqueId);
 
@@ -63,7 +67,9 @@ public interface GalleryData {
 
   void add(Group group);
 
-  boolean hasGroup(Group group);
+  default boolean hasGroup(Group group) {
+    return hasGroup(group.getUniqueId());
+  }
 
   boolean hasGroup(UUID uniqueId);
 
