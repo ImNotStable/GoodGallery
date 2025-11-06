@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -156,7 +157,10 @@ public final class Gallery {
 
   public void deletePhoto(Photo photo) throws IOException {
     galleryData.remove(photo);
-    Files.deleteIfExists(photo.getPropertyValue(Properties.PATH_KEY));
+
+    Optional<Path> path = photo.getPropertyValue(Properties.PATH_KEY);
+    if (path.isPresent())
+      Files.deleteIfExists(path.get());
   }
 
   public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {
@@ -170,7 +174,7 @@ public final class Gallery {
     galleryData.updateProperty(propertyHolder, property);
   }
 
-  public <T> T getPropertyValue(PropertyHolder propertyHolder, PropertyKey<T> key) {
+  public <T> Optional<T> getPropertyValue(PropertyHolder propertyHolder, PropertyKey<T> key) {
     return propertyHolder.getPropertyValue(key);
   }
 

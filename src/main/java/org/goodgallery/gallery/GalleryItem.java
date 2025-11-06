@@ -29,7 +29,7 @@ public abstract class GalleryItem implements PropertyHolder {
   }
 
   public String getName() {
-    return getPropertyValue(Properties.NAME_KEY);
+    return getPropertyValue(Properties.NAME_KEY).orElse("");
   }
 
   @Override

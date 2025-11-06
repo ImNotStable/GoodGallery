@@ -2,6 +2,7 @@ package org.goodgallery.gallery.properties;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public final class PropertiesImpl implements Properties {
 
@@ -17,8 +18,7 @@ public final class PropertiesImpl implements Properties {
   }
 
   private <T> void register(SerializedProperties serializedProperties, PropertyKey<T> key) {
-    T value = serializedProperties.getValueOrDefault(key, key.getDefaultValue(this));
-    properties.put(key, new PropertyInstance<>(key, value));
+    serializedProperties.getValueOrKeyDefault(key).ifPresent(t -> properties.put(key, new PropertyInstance<>(key, t)));
   }
 
   @SuppressWarnings("unchecked")
@@ -26,8 +26,8 @@ public final class PropertiesImpl implements Properties {
     return (PropertyInstance<T>) properties.get(key);
   }
 
-  public <T> T getValue(PropertyKey<T> key) {
-    return get(key).value();
+  public <T> Optional<T> getValue(PropertyKey<T> key) {
+    return Optional.ofNullable(get(key).value());
   }
 
 }

@@ -3,14 +3,15 @@ package org.goodgallery.gallery.properties;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.GalleryInstance;
 import org.goodgallery.gallery.Photo;
-import org.goodgallery.gallery.util.Transformer;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -26,7 +27,7 @@ public interface Properties {
     name -> name.getBytes(StandardCharsets.UTF_8),
     data -> new String(data, StandardCharsets.UTF_8)
   ).defaultProvider(
-    properties -> properties.getTransformedValue(PATH_KEY, path -> path.getFileName().toString())
+    properties -> properties.getTransformedValue(PATH_KEY, path -> path.getFileName().toString()).orElse("unknown")
   );
 
   PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp",
@@ -34,7 +35,13 @@ public interface Properties {
     data -> ByteBuffer.wrap(data).getLong()
   ).defaultProvider(properties ->
     properties.getTransformedValueOrDefault(PATH_KEY,
-      path -> Files.readAttributes(path, BasicFileAttributes.class).creationTime().toInstant().toEpochMilli(),
+      path -> {
+        try {
+          return Files.readAttributes(path, BasicFileAttributes.class).creationTime().toInstant().toEpochMilli();
+        } catch (IOException e) {
+          return System.currentTimeMillis();
+        }
+      },
       System.currentTimeMillis()
     )
   );
@@ -85,33 +92,26 @@ public interface Properties {
       return albums;
     }).defaultProvider(_ -> new HashSet<>());
 
-  <T> T getValue(PropertyKey<T> key);
+  <T> Optional<T> getValue(PropertyKey<T> key);
 
-  default <T> T getValueOrDefault(PropertyKey<T> key) {
-    return getValueOrDefault(key, key.getDefaultValue(this));
+  default <T> Optional<T> getValueOrKeyDefault(PropertyKey<T> key) {
+    return getValue(key).or(() -> key.getDefaultValue(this));
   }
 
   default <T> T getValueOrDefault(PropertyKey<T> key, T defaultValue) {
-    T value = getValue(key);
-    return value != null ? value : defaultValue;
+    return getValue(key).orElse(defaultValue);
   }
 
-  default <T, O> O getTransformedValue(PropertyKey<T> key, Transformer<T, O> transformer) {
-    return getTransformedValueOrDefault(key, transformer, null);
+  default <T, O> Optional<O> getTransformedValue(PropertyKey<T> key, Function<T, O> transformer) {
+    return getValue(key).map(transformer);
   }
 
-  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer) {
-    T value = getValueOrDefault(key);
-    return transformer.apply(value);
+  default <T, O> Optional<O> getTransformedValueOrKeyDefault(PropertyKey<T> key, Function<T, O> transformer) {
+    return getValueOrKeyDefault(key).map(transformer);
   }
 
-  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Transformer<T, O> transformer, O defaultValue) {
-    T value = getValue(key);
-    try {
-      return value != null ? transformer.transform(value) : defaultValue;
-    } catch (Throwable ignored) {
-      return defaultValue;
-    }
+  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer, O defaultValue) {
+    return getValue(key).map(transformer).orElse(defaultValue);
   }
 
 }

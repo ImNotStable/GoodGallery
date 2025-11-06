@@ -6,6 +6,7 @@ import org.goodgallery.gallery.properties.PropertyKey;
 import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
@@ -23,12 +24,12 @@ public final class Photo extends GalleryItem {
     super(DEFAULT_KEYS);
   }
 
-  public Path getPath() {
+  public Optional<Path> getPath() {
     return getPropertyValue(Properties.PATH_KEY);
   }
 
   public String getFileName() {
-    return getPath().getFileName().toString();
+    return getPath().map(Path::getFileName).map(Object::toString).orElse("");
   }
 
 }

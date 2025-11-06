@@ -25,7 +25,7 @@ public final class Group extends GalleryItem {
   }
 
   public Collection<Album> getAlbums() {
-    return Collections.unmodifiableCollection(getProperties().getValue(Properties.ALBUMS_KEY));
+    return getProperties().getValue(Properties.ALBUMS_KEY).map(Collections::unmodifiableCollection).orElse(Collections.emptySet());
   }
 
 }

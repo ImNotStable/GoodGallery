@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public final class SerializedProperties implements Properties {
 
@@ -23,8 +24,11 @@ public final class SerializedProperties implements Properties {
   }
 
   @Override
-  public <T> T getValue(PropertyKey<T> key) {
-    return key.deserialize(serializedData.get(key.toString()));
+  public <T> Optional<T> getValue(PropertyKey<T> key) {
+    byte[] data = serializedData.get(key.toString());
+    if (data == null)
+      return Optional.empty();
+    return Optional.ofNullable(key.deserialize(data));
   }
 
 }

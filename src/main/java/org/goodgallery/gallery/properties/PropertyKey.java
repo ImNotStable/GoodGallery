@@ -1,5 +1,6 @@
 package org.goodgallery.gallery.properties;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 public final class PropertyKey<T> {
@@ -36,8 +37,8 @@ public final class PropertyKey<T> {
     return this;
   }
 
-  public T getDefaultValue(Properties properties) {
-    return defaultProvider.apply(properties);
+  public Optional<T> getDefaultValue(Properties properties) {
+    return Optional.ofNullable(defaultProvider.apply(properties));
   }
 
   @Override
