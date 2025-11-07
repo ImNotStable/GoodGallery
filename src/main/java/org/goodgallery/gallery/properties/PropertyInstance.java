@@ -1,5 +1,7 @@
 package org.goodgallery.gallery.properties;
 
+import java.util.Optional;
+
 public final class PropertyInstance<T> {
 
   private final PropertyKey<T> key;
@@ -18,8 +20,8 @@ public final class PropertyInstance<T> {
     return key;
   }
 
-  public T value() {
-    return value;
+  public Optional<T> value() {
+    return Optional.ofNullable(value);
   }
 
   public PropertyInstance<T> value(T value) {

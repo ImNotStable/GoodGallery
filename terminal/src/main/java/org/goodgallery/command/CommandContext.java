@@ -3,7 +3,6 @@ package org.goodgallery.command;
 import lombok.Getter;
 import org.goodgallery.arguments.InternalArgument;
 
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 public class CommandContext {
 
-  private final InputStream in;
   private final PrintStream out;
   @Getter
   private final String label;
@@ -20,8 +18,7 @@ public class CommandContext {
 
   private final Map<String, Object> parsedArguments;
 
-  public CommandContext(InputStream in, PrintStream out, String label, String[] args) {
-    this.in = in;
+  public CommandContext(PrintStream out, String label, String[] args) {
     this.out = out;
     this.label = label;
     this.args = args;
@@ -29,16 +26,12 @@ public class CommandContext {
     this.parsedArguments = new HashMap<>();
   }
 
-  public CommandContext(InputStream in, PrintStream out, String[] command) {
-    this(in, out, command[0], Arrays.copyOfRange(command, 1, command.length));
+  public CommandContext(PrintStream out, String[] command) {
+    this(out, command[0], Arrays.copyOfRange(command, 1, command.length));
   }
 
-  public CommandContext(InputStream in, PrintStream out, String rawCommand) {
-    this(in, out, rawCommand.split(" "));
-  }
-
-  public InputStream in() {
-    return in;
+  public CommandContext(PrintStream out, String rawCommand) {
+    this(out, rawCommand.split(" "));
   }
 
   public PrintStream out() {

@@ -4,7 +4,10 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import org.goodgallery.gallery.data.GalleryData;
 import org.goodgallery.gallery.data.JsonGalleryData;
-import org.goodgallery.gallery.properties.*;
+import org.goodgallery.gallery.properties.Properties;
+import org.goodgallery.gallery.properties.PropertiesImpl;
+import org.goodgallery.gallery.properties.PropertyInstance;
+import org.goodgallery.gallery.properties.PropertyKey;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,11 +40,11 @@ public final class Gallery {
     return Collections.unmodifiableCollection(galleryData.getGroups());
   }
 
-  public Group getGroup(UUID uniqueId) {
+  public Optional<Group> getGroup(UUID uniqueId) {
     return galleryData.getGroup(uniqueId);
   }
 
-  public Group getGroup(String name) {
+  public Optional<Group> getGroup(String name) {
     return galleryData.getGroup(name);
   }
 
@@ -76,11 +79,11 @@ public final class Gallery {
     return Collections.unmodifiableCollection(galleryData.getAlbums());
   }
 
-  public Album getAlbum(UUID uniqueId) {
+  public Optional<Album> getAlbum(UUID uniqueId) {
     return galleryData.getAlbum(uniqueId);
   }
 
-  public Album getAlbum(String name) {
+  public Optional<Album> getAlbum(String name) {
     return galleryData.getAlbum(name);
   }
 
@@ -115,15 +118,15 @@ public final class Gallery {
     return Collections.unmodifiableCollection(galleryData.getPhotos());
   }
 
-  public Photo getPhoto(UUID uniqueId) {
+  public Optional<Photo> getPhoto(UUID uniqueId) {
     return galleryData.getPhoto(uniqueId);
   }
 
-  public Photo getPhoto(Path path) {
+  public Optional<Photo> getPhoto(Path path) {
     return galleryData.getPhoto(path);
   }
 
-  public Photo getPhoto(String name) {
+  public Optional<Photo> getPhoto(String name) {
     return galleryData.getPhoto(name);
   }
 
@@ -163,19 +166,19 @@ public final class Gallery {
       Files.deleteIfExists(path.get());
   }
 
-  public <T> void updateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, T value) {
-    PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).get(key).value(value);
-    galleryData.updateProperty(propertyHolder, property);
+  public <T> void updateProperty(GalleryItem galleryItem, PropertyKey<T> key, T value) {
+    PropertyInstance<T> property = ((PropertiesImpl) galleryItem.getProperties()).get(key).value(value);
+    galleryData.updateProperty(galleryItem, property);
   }
 
-  public <T> void mutateProperty(PropertyHolder propertyHolder, PropertyKey<T> key, Consumer<T> mutator) {
-    PropertyInstance<T> property = ((PropertiesImpl) propertyHolder.getProperties()).get(key);
-    mutator.accept(property.value());
-    galleryData.updateProperty(propertyHolder, property);
+  public <T> void mutateProperty(GalleryItem galleryItem, PropertyKey<T> key, Consumer<T> mutator) {
+    PropertyInstance<T> property = ((PropertiesImpl) galleryItem.getProperties()).get(key);
+    property.value().ifPresent(mutator);
+    galleryData.updateProperty(galleryItem, property);
   }
 
-  public <T> Optional<T> getPropertyValue(PropertyHolder propertyHolder, PropertyKey<T> key) {
-    return propertyHolder.getPropertyValue(key);
+  public <T> Optional<T> getPropertyValue(GalleryItem galleryItem, PropertyKey<T> key) {
+    return galleryItem.getPropertyValue(key);
   }
 
 }

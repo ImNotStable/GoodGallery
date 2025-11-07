@@ -18,7 +18,7 @@ public final class PropertiesImpl implements Properties {
   }
 
   private <T> void register(SerializedProperties serializedProperties, PropertyKey<T> key) {
-    serializedProperties.getValueOrKeyDefault(key).ifPresent(t -> properties.put(key, new PropertyInstance<>(key, t)));
+    serializedProperties.getValueOrKeyDefault(key).ifPresent(value -> properties.put(key, new PropertyInstance<>(key, value)));
   }
 
   @SuppressWarnings("unchecked")
@@ -27,7 +27,7 @@ public final class PropertiesImpl implements Properties {
   }
 
   public <T> Optional<T> getValue(PropertyKey<T> key) {
-    return Optional.ofNullable(get(key).value());
+    return get(key).value();
   }
 
 }

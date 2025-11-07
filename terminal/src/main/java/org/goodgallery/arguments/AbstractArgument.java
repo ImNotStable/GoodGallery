@@ -5,6 +5,9 @@ import org.goodgallery.command.CommandContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class AbstractArgument<I> implements Argument<I> {
 
@@ -29,6 +32,30 @@ public abstract class AbstractArgument<I> implements Argument<I> {
 
   protected Consumer<CommandContext> executable() {
     return executable;
+  }
+
+  protected InternalArgument<I> toInternal(String usage, Predicate<String> inputValidator, Function<String, I> parser) {
+    return new InternalArgument<>(
+      name(),
+      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
+      executable()
+    ) {
+
+      @Override
+      public String getUsage() {
+        return usage;
+      }
+
+      @Override
+      public boolean isValidInput(String input) {
+        return inputValidator.test(input);
+      }
+
+      @Override
+      public I parse(String input) {
+        return parser.apply(input);
+      }
+    };
   }
 
   @Override

@@ -1,14 +1,15 @@
 package org.goodgallery.gallery.data;
 
 import org.goodgallery.gallery.Album;
+import org.goodgallery.gallery.GalleryItem;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
-import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface GalleryData {
@@ -31,11 +32,11 @@ public interface GalleryData {
 
   Collection<Photo> getPhotos();
 
-  Photo getPhoto(UUID uniqueId);
+  Optional<Photo> getPhoto(UUID uniqueId);
 
-  Photo getPhoto(Path path);
+  Optional<Photo> getPhoto(Path path);
 
-  Photo getPhoto(String name);
+  Optional<Photo> getPhoto(String name);
 
   void remove(Photo photo);
 
@@ -55,9 +56,9 @@ public interface GalleryData {
 
   Collection<Album> getAlbums();
 
-  Album getAlbum(UUID uniqueId);
+  Optional<Album> getAlbum(UUID uniqueId);
 
-  Album getAlbum(String name);
+  Optional<Album> getAlbum(String name);
 
   void remove(Album album);
 
@@ -77,12 +78,12 @@ public interface GalleryData {
 
   Collection<Group> getGroups();
 
-  Group getGroup(UUID uniqueId);
+  Optional<Group> getGroup(UUID uniqueId);
 
-  Group getGroup(String name);
+  Optional<Group> getGroup(String name);
 
   void remove(Group group);
 
-  void updateProperty(PropertyHolder propertyHolder, PropertyInstance<?> property);
+  void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property);
 
 }

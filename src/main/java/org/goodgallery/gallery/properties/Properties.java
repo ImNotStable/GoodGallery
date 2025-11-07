@@ -60,11 +60,8 @@ public interface Properties {
       ByteBuffer byteBuffer = ByteBuffer.wrap(data);
       Set<Photo> photos = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
 
-      while (byteBuffer.hasRemaining()) {
-        UUID uniqueId = new UUID(byteBuffer.getLong(), byteBuffer.getLong());
-        Photo photo = GalleryInstance.get().getPhoto(uniqueId);
-        photos.add(photo);
-      }
+      while (byteBuffer.hasRemaining())
+        GalleryInstance.get().getPhoto(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(photos::add);
 
       return photos;
     }).defaultProvider(_ -> new HashSet<>());
@@ -83,11 +80,8 @@ public interface Properties {
       ByteBuffer byteBuffer = ByteBuffer.wrap(data);
       Set<Album> albums = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
 
-      while (byteBuffer.hasRemaining()) {
-        UUID uniqueId = new UUID(byteBuffer.getLong(), byteBuffer.getLong());
-        Album album = GalleryInstance.get().getAlbum(uniqueId);
-        albums.add(album);
-      }
+      while (byteBuffer.hasRemaining())
+        GalleryInstance.get().getAlbum(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(albums::add);
 
       return albums;
     }).defaultProvider(_ -> new HashSet<>());
