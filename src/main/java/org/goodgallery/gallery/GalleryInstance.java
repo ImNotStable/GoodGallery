@@ -13,7 +13,6 @@ public final class GalleryInstance {
     try {
       return GALLERY = new Gallery(path);
     } catch (IOException e) {
-      System.err.println("What the hellie happened!?");
       throw new RuntimeException("Failed to initialize Gallery", e);
     }
   }

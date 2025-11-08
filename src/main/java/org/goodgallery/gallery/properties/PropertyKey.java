@@ -25,11 +25,7 @@ public final class PropertyKey<T> {
   }
 
   public T deserialize(byte[] serializedData) {
-    try {
-      return deserializer.apply(serializedData);
-    } catch (Exception ignored) {
-      return null;
-    }
+    return deserializer.apply(serializedData);
   }
 
   public PropertyKey<T> defaultProvider(Function<Properties, T> defaultProvider) {

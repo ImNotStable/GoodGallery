@@ -3,13 +3,13 @@ package org.goodgallery.gallery;
 import lombok.Getter;
 import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
-import org.goodgallery.gallery.properties.PropertyHolder;
 import org.goodgallery.gallery.properties.PropertyKey;
 import org.goodgallery.gallery.properties.SerializedProperties;
 
+import java.util.Optional;
 import java.util.UUID;
 
-public abstract class GalleryItem implements PropertyHolder {
+public abstract class GalleryItem {
 
   @Getter
   private final UUID uniqueId;
@@ -26,6 +26,10 @@ public abstract class GalleryItem implements PropertyHolder {
 
   public Properties getProperties() {
     return properties;
+  }
+
+  public <T> Optional<T> getPropertyValue(PropertyKey<T> key) {
+    return getProperties().getValueOrKeyDefault(key);
   }
 
   public String getName() {

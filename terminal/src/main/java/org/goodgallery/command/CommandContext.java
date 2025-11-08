@@ -62,9 +62,4 @@ public class CommandContext {
     return clazz.cast(get(argumentKey));
   }
 
-  @Override
-  public String toString() {
-    return "label=" + label + ", args=" + Arrays.toString(args);
-  }
-
 }

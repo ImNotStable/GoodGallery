@@ -13,9 +13,11 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -102,7 +104,12 @@ public class Main {
 
             BufferedImage originalImage;
             try {
-              originalImage = ImageIO.read(photo.getPath().toFile());
+              Optional<File> photoFile = photo.getPath().map(Path::toFile);
+              if (photoFile.isEmpty()) {
+                context.out().println("Photo has no associated file path");
+                return;
+              }
+              originalImage = ImageIO.read(photoFile.get());
             } catch (IOException e) {
               context.out().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
               return;

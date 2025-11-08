@@ -2,6 +2,7 @@ package org.goodgallery.gallery.properties;
 
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.GalleryInstance;
+import org.goodgallery.gallery.GalleryItem;
 import org.goodgallery.gallery.Photo;
 
 import java.io.IOException;
@@ -47,44 +48,33 @@ public interface Properties {
   );
 
   PropertyKey<Set<Photo>> PHOTOS_KEY = new PropertyKey<>("photos",
-    photos -> {
-      ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES * 2 * photos.size());
-      for (Photo photo : photos) {
-        UUID uniqueId = photo.getUniqueId();
-        byteBuffer.putLong(uniqueId.getMostSignificantBits());
-        byteBuffer.putLong(uniqueId.getLeastSignificantBits());
-      }
-      return byteBuffer.array();
-    },
-    data -> {
-      ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-      Set<Photo> photos = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
-
-      while (byteBuffer.hasRemaining())
-        GalleryInstance.get().getPhoto(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(photos::add);
-
-      return photos;
-    }).defaultProvider(_ -> new HashSet<>());
+    Properties::serializeGalleryItems,
+    data -> deserializeGalleryItems(data, uniqueId -> GalleryInstance.get().getPhoto(uniqueId)))
+    .defaultProvider(_ -> new HashSet<>());
 
   PropertyKey<Set<Album>> ALBUMS_KEY = new PropertyKey<>("albums",
-    albums -> {
-      ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES * 2 * albums.size());
-      for (Album album : albums) {
-        UUID uniqueId = album.getUniqueId();
-        byteBuffer.putLong(uniqueId.getMostSignificantBits());
-        byteBuffer.putLong(uniqueId.getLeastSignificantBits());
-      }
-      return byteBuffer.array();
-    },
-    data -> {
-      ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-      Set<Album> albums = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
+    Properties::serializeGalleryItems,
+    data -> deserializeGalleryItems(data, uniqueId -> GalleryInstance.get().getAlbum(uniqueId)))
+    .defaultProvider(_ -> new HashSet<>());
 
-      while (byteBuffer.hasRemaining())
-        GalleryInstance.get().getAlbum(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(albums::add);
+  private static <T extends GalleryItem> byte[] serializeGalleryItems(Set<T> items) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES * 2 * items.size());
+    for (T item : items) {
+      UUID uniqueId = item.getUniqueId();
+      byteBuffer.putLong(uniqueId.getMostSignificantBits());
+      byteBuffer.putLong(uniqueId.getLeastSignificantBits());
+    }
+    return byteBuffer.array();
+  }
 
-      return albums;
-    }).defaultProvider(_ -> new HashSet<>());
+  private static <T extends GalleryItem> Set<T> deserializeGalleryItems(byte[] data, Function<UUID, Optional<T>> deserializer) {
+    ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+    Set<T> items = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
+    while (byteBuffer.hasRemaining()) {
+      deserializer.apply(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(items::add);
+    }
+    return items;
+  }
 
   <T> Optional<T> getValue(PropertyKey<T> key);
 
