@@ -1,14 +1,15 @@
 plugins {
   id("java")
-  id("com.gradleup.shadow") version "9.2.2"
 }
 
 group = "org.goodgallery"
 version = "0.0.1"
 
+tasks {
+}
+
 allprojects {
   apply(plugin = "java")
-  apply(plugin = "com.gradleup.shadow")
 
   repositories {
     mavenCentral()
@@ -49,29 +50,25 @@ allprojects {
 
       options.compilerArgs.plusAssign("-Xlint:deprecation")
     }
-    jar {
-      enabled = false
-    }
-    assemble {
-      dependsOn(shadowJar)
-    }
-    shadowJar {
-      destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
-      archiveBaseName.set("GoodGallery")
-      archiveClassifier.set(project.name)
-      archiveVersion.set("${rootProject.version}")
-
-      manifest {
-        attributes(mapOf("Main-Class" to "${group}.Main"))
-      }
-
-      minimize()
-    }
     test {
       useJUnitPlatform()
       testLogging {
         events("passed", "skipped", "failed")
       }
+    }
+  }
+}
+
+subprojects {
+  dependencies {
+    implementation(rootProject)
+  }
+  tasks {
+    jar {
+      archiveBaseName.set("GoodGallery")
+      archiveClassifier.set(project.name)
+      archiveVersion.set("${rootProject.version}")
+      destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
     }
   }
 }

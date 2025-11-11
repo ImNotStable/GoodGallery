@@ -1,2 +1,2 @@
 rootProject.name = "GoodGallery"
-include("common", "terminal", "graphical")
+include("terminal", "graphical")
