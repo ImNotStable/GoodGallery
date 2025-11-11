@@ -1,6 +1,6 @@
 plugins {
   id("java")
-  id("com.gradleup.shadow") version "9.1.0"
+  id("com.gradleup.shadow") version "9.2.2"
 }
 
 group = "org.goodgallery"
@@ -20,8 +20,8 @@ allprojects {
     implementation("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
 
-    implementation("com.zaxxer:HikariCP:7.0.2")
-    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
+    //implementation("com.zaxxer:HikariCP:7.0.2")
+    //implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("com.google.guava:guava:33.5.0-jre")
     implementation("com.google.code.gson:gson:2.13.2")
 
@@ -31,28 +31,24 @@ allprojects {
   }
 
   tasks {
-    test {
-      useJUnitPlatform()
-      testLogging {
-        events("passed", "skipped", "failed")
+    val javaLanguageVersion = JavaLanguageVersion.of(25)
+    val javaVersion = JavaVersion.VERSION_25
+    java {
+      toolchain {
+        languageVersion.set(javaLanguageVersion)
       }
+      targetCompatibility = javaVersion
+      sourceCompatibility = javaVersion
+
+      withJavadocJar()
+      withSourcesJar()
     }
-  }
-}
+    compileJava {
+      options.release.set(javaLanguageVersion.asInt())
+      options.encoding = Charsets.UTF_8.name()
 
-subprojects {
-  apply(plugin = "java")
-  apply(plugin = "com.gradleup.shadow")
-
-  repositories {
-    mavenCentral()
-  }
-
-  dependencies {
-    implementation(project(":"))
-  }
-
-  tasks {
+      options.compilerArgs.plusAssign("-Xlint:deprecation")
+    }
     jar {
       enabled = false
     }
@@ -70,6 +66,12 @@ subprojects {
       }
 
       minimize()
+    }
+    test {
+      useJUnitPlatform()
+      testLogging {
+        events("passed", "skipped", "failed")
+      }
     }
   }
 }

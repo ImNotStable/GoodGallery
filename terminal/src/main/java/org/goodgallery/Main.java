@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-  private static final Path GALLERY_PATH = Paths.get("./gallery");
+  private static final Path GALLERY_PATH = Paths.get("org/goodgallery/gallery");
 
   @SuppressWarnings("resource")
   static void main() {
