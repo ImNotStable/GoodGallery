@@ -8,15 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class SerializedProperties implements Properties {
-
-  private final Map<String, byte[]> serializedData;
+public record SerializedProperties(Map<String, byte[]> serializedData) implements Properties {
 
   public SerializedProperties(Gson gson, JsonObject json) {
     Map<String, byte[]> serializedData = new HashMap<>();
     for (String key : json.keySet())
       serializedData.put(key, gson.fromJson(json.get(key), byte[].class));
-    this.serializedData = Collections.unmodifiableMap(serializedData);
+    this(Collections.unmodifiableMap(serializedData));
   }
 
   public SerializedProperties(Map<String, byte[]> serializedData) {

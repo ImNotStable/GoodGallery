@@ -3,7 +3,7 @@ package org.goodgallery.gallery;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import org.goodgallery.gallery.data.GalleryData;
-import org.goodgallery.gallery.data.JsonGalleryData;
+import org.goodgallery.gallery.data.SQLiteGalleryData;
 import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyInstance;
@@ -31,9 +31,9 @@ public final class Gallery {
   Gallery(Path path) throws IOException {
     path = path.toAbsolutePath().normalize();
     if (!Files.isDirectory(path))
-      Files.createDirectory(path);
+      Files.createDirectories(path);
     this.path = path;
-    this.galleryData = new JsonGalleryData(path);
+    this.galleryData = new SQLiteGalleryData(path);
   }
 
   public Collection<Group> getGroups() {

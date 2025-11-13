@@ -11,11 +11,7 @@ import org.goodgallery.gallery.properties.SerializedProperties;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,27 +21,12 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
   private final HikariDataSource dataSource;
 
   public SQLiteGalleryData(Path path) {
-    super(path.resolve("gallery.sqlite"));
+    path = path.resolve("gallery.sqlite");
 
     HikariConfig config = new HikariConfig();
-    config.setJdbcUrl(String.format("jdbc:sqlite:%s", super.path.toAbsolutePath()));
+    config.setJdbcUrl(String.format("jdbc:sqlite:%s", path.toAbsolutePath()));
     dataSource = new HikariDataSource(config);
-
-    try (Connection connection = dataSource.getConnection();
-         Statement statement = connection.createStatement()) {
-      statement.execute("CREATE TABLE IF NOT EXISTS gallery_items(unique_id BINARY(16) PRIMARY KEY, item_type VARCHAR(8));");
-      statement.execute("""
-        CREATE TABLE IF NOT EXISTS properties(
-            unique_id BINARY(16) PRIMARY KEY,
-            "key" VARCHAR(32),
-            "data" BINARY(1024),
-            FOREIGN KEY(unique_id) references gallery_items(unique_id) ON DELETE CASCADE,
-            UNIQUE(unique_id, "key")
-        );
-""");
-    } catch (SQLException exception) {
-      throw new RuntimeException("Failed to create tables for database", exception);
-    }
+    super(path);
   }
 
   private byte[] convertFromUUID(UUID uniqueId) {
@@ -63,28 +44,42 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
   @Override
   protected synchronized void load() {
     try (Connection connection = dataSource.getConnection();
-         Statement statement = connection.createStatement();
-         ResultSet galleryItemsResult = statement.executeQuery("SELECT * FROM gallery_items;")) {
-
-      while (galleryItemsResult.next()) {
-        byte[] uniqueIdBytes = galleryItemsResult.getBytes("unique_id");
-        UUID uniqueId = convertToUUID(uniqueIdBytes);
-        Map<String, byte[]> rawProperties = new HashMap<>();
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM properties WHERE unique_id = ?")) {
-          preparedStatement.setBytes(1, uniqueIdBytes);
-          try (ResultSet propertiesResult = preparedStatement.executeQuery()) {
-            while (propertiesResult.next())
-              rawProperties.put(propertiesResult.getString("key"), propertiesResult.getBytes("data"));
-          }
-        }
-        SerializedProperties serializedProperties = new SerializedProperties(rawProperties);
-        switch (galleryItemsResult.getString("item_type")) {
-          case "photo" -> photosByUUID.put(uniqueId, new Photo(uniqueId, serializedProperties));
-          case "album" -> albumsByUUID.put(uniqueId, new Album(uniqueId, serializedProperties));
-          case "group" -> groupsByUUID.put(uniqueId, new Group(uniqueId, serializedProperties));
-        }
+         Statement statement = connection.createStatement()) {
+      try {
+        statement.execute("CREATE TABLE IF NOT EXISTS gallery_items(unique_id BINARY(16) PRIMARY KEY, item_type VARCHAR(8));");
+        statement.execute("""
+            CREATE TABLE IF NOT EXISTS properties(
+                unique_id BINARY(16) PRIMARY KEY,
+                "key" VARCHAR(32),
+                "data" BINARY(1024),
+                FOREIGN KEY(unique_id) references gallery_items(unique_id) ON DELETE CASCADE,
+                UNIQUE(unique_id, "key")
+            );
+        """);
+      } catch (SQLException exception) {
+        throw new RuntimeException("Failed to create tables for database", exception);
       }
 
+      try (ResultSet galleryItemsResult = statement.executeQuery("SELECT * FROM gallery_items;")) {
+        while (galleryItemsResult.next()) {
+          byte[] uniqueIdBytes = galleryItemsResult.getBytes("unique_id");
+          UUID uniqueId = convertToUUID(uniqueIdBytes);
+          Map<String, byte[]> rawProperties = new HashMap<>();
+          try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM properties WHERE unique_id = ?")) {
+            preparedStatement.setBytes(1, uniqueIdBytes);
+            try (ResultSet propertiesResult = preparedStatement.executeQuery()) {
+              while (propertiesResult.next())
+                rawProperties.put(propertiesResult.getString("key"), propertiesResult.getBytes("data"));
+            }
+          }
+          SerializedProperties serializedProperties = new SerializedProperties(rawProperties);
+          switch (galleryItemsResult.getString("item_type")) {
+            case "photo" -> photosByUUID.put(uniqueId, new Photo(uniqueId, serializedProperties));
+            case "album" -> albumsByUUID.put(uniqueId, new Album(uniqueId, serializedProperties));
+            case "group" -> groupsByUUID.put(uniqueId, new Group(uniqueId, serializedProperties));
+          }
+        }
+      }
     } catch (SQLException exception) {
       throw new RuntimeException("Failed to load gallery data", exception);
     }
