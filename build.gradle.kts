@@ -17,8 +17,9 @@ subprojects {
   }
 
   tasks {
-    val javaLanguageVersion = JavaLanguageVersion.of(25)
-    val javaVersion = JavaVersion.VERSION_25
+    val jdkVersion = 25
+    val javaLanguageVersion = JavaLanguageVersion.of(jdkVersion)
+    val javaVersion = JavaVersion.toVersion(jdkVersion)
     java {
       toolchain {
         languageVersion.set(javaLanguageVersion)
@@ -27,7 +28,7 @@ subprojects {
       sourceCompatibility = javaVersion
     }
     compileJava {
-      options.release.set(javaLanguageVersion.asInt())
+      options.release.set(jdkVersion)
       options.encoding = Charsets.UTF_8.name()
       options.compilerArgs.plusAssign("-Xlint:deprecation")
     }

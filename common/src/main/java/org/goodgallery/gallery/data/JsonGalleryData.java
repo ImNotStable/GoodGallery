@@ -15,8 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public final class JsonGalleryData extends AbstractGalleryData {
 
@@ -25,17 +26,16 @@ public final class JsonGalleryData extends AbstractGalleryData {
     .setPrettyPrinting()
     .create();
 
-  private final Path path;
   private final JsonObject json;
 
   public JsonGalleryData(Path path) throws IOException {
-    this.path = path.resolve("gallery.json");
+    super (path.resolve("gallery.json"));
 
-    if (Files.exists(this.path)) {
-      this.json = GSON.fromJson(Files.newBufferedReader(this.path), JsonObject.class);
+    if (Files.exists(path)) {
+      json = GSON.fromJson(Files.newBufferedReader(super.path), JsonObject.class);
     } else {
-      Files.createFile(this.path);
-      this.json = new JsonObject();
+      Files.createFile(super.path);
+      json = new JsonObject();
       json.add("groups", new JsonObject());
       json.add("albums", new JsonObject());
       json.add("photos", new JsonObject());
@@ -43,10 +43,13 @@ public final class JsonGalleryData extends AbstractGalleryData {
     }
   }
 
-  private void loadSection(String section, BiConsumer<UUID, SerializedProperties> generator) {
+  private <T extends GalleryItem> void loadSection(String section, BiFunction<UUID, SerializedProperties, T> generator, Map<UUID, T> map) {
     JsonObject sectionJson = json.getAsJsonObject(section);
-    for (String key : sectionJson.keySet())
-      generator.accept(UUID.fromString(key), new SerializedProperties(GSON, sectionJson.getAsJsonObject(key)));
+    for (String key : sectionJson.keySet()) {
+      UUID uniqueId = UUID.fromString(key);
+      T galleryItem = generator.apply(uniqueId, new SerializedProperties(GSON, sectionJson.getAsJsonObject(key)));
+      map.put(uniqueId, galleryItem);
+    }
   }
 
   private JsonObject getParent(GalleryItem galleryItem) {
@@ -64,15 +67,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
     return getParent(galleryItem).getAsJsonObject(galleryItem.toString());
   }
 
-  @Override
-  protected void load() {
-    loadSection("photos,", this::createPhoto);
-    loadSection("albums", this::createAlbum);
-    loadSection("groups", this::createGroup);
-  }
-
-  @Override
-  protected void save() {
+  private void save() {
     try {
       Files.write(path, GSON.toJson(json).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     } catch (IOException e) {
@@ -81,19 +76,26 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  protected void insert(GalleryItem galleryItem) {
+  protected synchronized void load() {
+    loadSection("photos", Photo::new, photosByUUID);
+    loadSection("albums", Album::new, albumsByUUID);
+    loadSection("groups", Group::new, groupsByUUID);
+  }
+
+  @Override
+  protected synchronized void insert(GalleryItem galleryItem) {
     getParent(galleryItem).add(galleryItem.toString(), new JsonObject());
     save();
   }
 
   @Override
-  protected void delete(GalleryItem galleryItem) {
+  protected synchronized void delete(GalleryItem galleryItem) {
     getParent(galleryItem).remove(galleryItem.toString());
     save();
   }
 
   @Override
-  public void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property) {
+  public synchronized void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property) {
     findProperties(galleryItem).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class));
     save();
   }

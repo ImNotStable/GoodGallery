@@ -19,7 +19,7 @@ public final class SerializedProperties implements Properties {
     this.serializedData = Collections.unmodifiableMap(serializedData);
   }
 
-  SerializedProperties(Map<String, byte[]> serializedData) {
+  public SerializedProperties(Map<String, byte[]> serializedData) {
     this.serializedData = Collections.unmodifiableMap(serializedData);
   }
 

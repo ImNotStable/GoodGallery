@@ -14,20 +14,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractGalleryData implements GalleryData {
 
-  private final Map<UUID, Photo> photosByUUID;
-  private final Map<UUID, Album> albumsByUUID;
-  private final Map<UUID, Group> groupsByUUID;
+  protected final Path path;
 
-  protected AbstractGalleryData() {
-    photosByUUID = new ConcurrentHashMap<>();
-    albumsByUUID = new ConcurrentHashMap<>();
-    groupsByUUID = new ConcurrentHashMap<>();
+  protected final Map<UUID, Photo> photosByUUID;
+  protected final Map<UUID, Album> albumsByUUID;
+  protected final Map<UUID, Group> groupsByUUID;
+
+  protected AbstractGalleryData(Path path) {
+    this.path = path;
+    this.photosByUUID = new ConcurrentHashMap<>();
+    this.albumsByUUID = new ConcurrentHashMap<>();
+    this.groupsByUUID = new ConcurrentHashMap<>();
     load();
   }
 
   protected abstract void load();
-
-  protected abstract void save();
 
   protected abstract void insert(GalleryItem galleryItem);
 
@@ -141,6 +142,11 @@ public abstract class AbstractGalleryData implements GalleryData {
   public void remove(Group group) {
     delete(group);
     groupsByUUID.remove(group.getUniqueId());
+  }
+
+  @Override
+  public void close() {
+
   }
 
 }

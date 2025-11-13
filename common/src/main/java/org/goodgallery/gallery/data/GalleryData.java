@@ -5,18 +5,14 @@ import org.goodgallery.gallery.GalleryItem;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
 import org.goodgallery.gallery.properties.PropertyInstance;
-import org.goodgallery.gallery.properties.SerializedProperties;
 
+import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface GalleryData {
-
-  default void createPhoto(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(new Photo(uniqueId, serializedProperties));
-  }
+public interface GalleryData extends Closeable {
 
   void add(Photo photo);
 
@@ -40,10 +36,6 @@ public interface GalleryData {
 
   void remove(Photo photo);
 
-  default void createAlbum(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(new Album(uniqueId, serializedProperties));
-  }
-
   void add(Album album);
 
   default boolean hasAlbum(Album album) {
@@ -61,10 +53,6 @@ public interface GalleryData {
   Optional<Album> getAlbum(String name);
 
   void remove(Album album);
-
-  default void createGroup(UUID uniqueId, SerializedProperties serializedProperties) {
-    add(new Group(uniqueId, serializedProperties));
-  }
 
   void add(Group group);
 
@@ -85,5 +73,7 @@ public interface GalleryData {
   void remove(Group group);
 
   void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property);
+
+  void close();
 
 }
