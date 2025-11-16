@@ -20,7 +20,7 @@ public final class Photo extends GalleryItem {
     super(uniqueId, serializedProperties, DEFAULT_KEYS);
   }
 
-  Photo() {
+  public Photo() {
     super(DEFAULT_KEYS);
   }
 
@@ -28,8 +28,8 @@ public final class Photo extends GalleryItem {
     return getPropertyValue(Properties.PATH_KEY);
   }
 
-  public String getFileName() {
-    return getPath().map(Path::getFileName).map(Object::toString).orElse("");
+  public Optional<String> getFileName() {
+    return getPath().map(Path::getFileName).map(Path::toString);
   }
 
 }

@@ -21,7 +21,7 @@ public abstract class GalleryItem {
   }
 
   protected GalleryItem(PropertyKey<?>[] defaultKeys) {
-    this(UUID.randomUUID(), null, defaultKeys);
+    this(UUID.randomUUID(), new SerializedProperties(), defaultKeys);
   }
 
   public Properties getProperties() {
@@ -32,8 +32,8 @@ public abstract class GalleryItem {
     return getProperties().getValueOrKeyDefault(key);
   }
 
-  public String getName() {
-    return getPropertyValue(Properties.NAME_KEY).orElse("");
+  public Optional<String> getName() {
+    return getPropertyValue(Properties.NAME_KEY);
   }
 
   @Override

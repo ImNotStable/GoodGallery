@@ -5,6 +5,7 @@ import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.GalleryItem;
 import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
+import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyInstance;
 import org.goodgallery.gallery.properties.SerializedProperties;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   private final JsonObject json;
 
   public JsonGalleryData(Path path) throws IOException {
-    super (path.resolve("gallery.json"));
+    super(path.resolve("gallery.json"));
 
     if (Files.exists(path)) {
       json = GSON.fromJson(Files.newBufferedReader(super.path), JsonObject.class);
@@ -85,6 +86,9 @@ public final class JsonGalleryData extends AbstractGalleryData {
   @Override
   protected synchronized void insert(GalleryItem galleryItem) {
     getParent(galleryItem).add(galleryItem.toString(), new JsonObject());
+    ((PropertiesImpl) galleryItem.getProperties()).all().forEach(
+      property -> findProperties(galleryItem).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class))
+    );
     save();
   }
 

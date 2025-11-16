@@ -10,7 +10,7 @@ public class PathArgument extends AbstractArgument<Path> {
 
   @Override
   public InternalArgument<Path> toInternal() {
-    return toInternal("\"path\"", _ -> true, input -> Path.of(input).normalize().toAbsolutePath());
+    return toInternal("\"path\"", _ -> true, context -> Path.of(context.getGreedyArgs()).normalize().toAbsolutePath());
   }
 
 }

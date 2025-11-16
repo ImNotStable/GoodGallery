@@ -23,16 +23,15 @@ public abstract class InternalArgument<O> {
 
   public abstract String getUsage();
 
-  public abstract boolean isValidInput(String input);
+  public abstract boolean isValidInput(CommandContext input);
 
-  public abstract O parse(String input);
+  public abstract O parse(CommandContext input);
 
   public boolean execute(CommandContext context) {
-
-    if (!context.validateArgument(this))
+    if (!isValidInput(context))
       return false;
 
-    O arg = parse(context.getNextArg());
+    O arg = parse(context);
 
     context.put(name, arg);
 

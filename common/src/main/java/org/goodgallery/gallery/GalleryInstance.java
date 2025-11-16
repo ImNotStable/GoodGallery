@@ -1,23 +1,22 @@
 package org.goodgallery.gallery;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 public final class GalleryInstance {
 
   private static Gallery GALLERY = null;
 
-  public static Gallery init(Path path) {
+  public static synchronized Gallery init(GallerySettings properties) {
     if (GALLERY != null)
       throw new IllegalStateException("Gallery instance has already been initialized");
     try {
-      return GALLERY = new Gallery(path);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to initialize Gallery", e);
+      return GALLERY = new Gallery(properties);
+    } catch (Exception exception) {
+      throw new RuntimeException("Failed to initialize Gallery", exception);
     }
   }
 
-  public static Gallery get() {
+  public static synchronized Gallery get() {
+    if (GALLERY == null)
+      throw new IllegalStateException("Gallery has not been initialized. Call init() first.");
     return GALLERY;
   }
 

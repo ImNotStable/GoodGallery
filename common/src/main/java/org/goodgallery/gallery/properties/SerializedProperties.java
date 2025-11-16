@@ -10,15 +10,19 @@ import java.util.Optional;
 
 public record SerializedProperties(Map<String, byte[]> serializedData) implements Properties {
 
+  public SerializedProperties () {
+    this(new HashMap<>());
+  }
+
   public SerializedProperties(Gson gson, JsonObject json) {
     Map<String, byte[]> serializedData = new HashMap<>();
     for (String key : json.keySet())
       serializedData.put(key, gson.fromJson(json.get(key), byte[].class));
-    this(Collections.unmodifiableMap(serializedData));
+    this(serializedData);
   }
 
   public SerializedProperties(Map<String, byte[]> serializedData) {
-    this.serializedData = Collections.unmodifiableMap(serializedData);
+    this.serializedData = Collections.unmodifiableMap(serializedData != null ? serializedData : new HashMap<>());
   }
 
   @Override

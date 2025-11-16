@@ -20,7 +20,7 @@ public final class Album extends GalleryItem {
     super(uniqueId, serializedProperties, DEFAULT_KEYS);
   }
 
-  Album() {
+  public Album() {
     super(DEFAULT_KEYS);
   }
 

@@ -1,9 +1,7 @@
 package org.goodgallery.gallery;
 
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 import org.goodgallery.gallery.data.GalleryData;
-import org.goodgallery.gallery.data.SQLiteGalleryData;
 import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
 import org.goodgallery.gallery.properties.PropertyInstance;
@@ -28,12 +26,11 @@ public final class Gallery {
   private final Path path;
   private final GalleryData galleryData;
 
-  Gallery(Path path) throws IOException {
-    path = path.toAbsolutePath().normalize();
+  Gallery(GallerySettings properties) throws Exception {
+    path = properties.galleryPath().toAbsolutePath().normalize();
     if (!Files.isDirectory(path))
       Files.createDirectories(path);
-    this.path = path;
-    this.galleryData = new SQLiteGalleryData(path);
+    this.galleryData = properties.storage(path);
   }
 
   public Collection<Group> getGroups() {
@@ -54,8 +51,8 @@ public final class Gallery {
 
   public Group createGroup(String name) {
     Group group = new Group();
+    ((PropertiesImpl) group.getProperties()).get(Properties.NAME_KEY).value(name);
     galleryData.add(group);
-    updateProperty(group, PropertiesImpl.NAME_KEY, name);
     return group;
   }
 
@@ -64,14 +61,18 @@ public final class Gallery {
   }
 
   public void addAlbumToGroup(Album album, Group group) {
-    Preconditions.checkState(galleryData.hasAlbum(album), "Album \"%s\" does not exist", album.getName());
-    Preconditions.checkState(galleryData.hasGroup(group), "Group \"%s\" does not exist", group.getName());
+    if (!galleryData.hasAlbum(album))
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName().orElse(album.toString())));
+    if (!galleryData.hasGroup(group))
+      throw new IllegalStateException("Group \"%s\" does not exist".formatted(group.getName().orElse(group.toString())));
     mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.add(album));
   }
 
   public void removeAlbumFromGroup(Album album, Group group) {
-    Preconditions.checkState(galleryData.hasAlbum(album), "Album \"%s\" does not exist", album.getName());
-    Preconditions.checkState(galleryData.hasGroup(group), "Group \"%s\" does not exist", group.getName());
+    if (!galleryData.hasAlbum(album))
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName().orElse(album.toString())));
+    if (!galleryData.hasGroup(group))
+      throw new IllegalStateException("Group \"%s\" does not exist".formatted(group.getName().orElse(group.toString())));
     mutateProperty(group, Properties.ALBUMS_KEY, albums -> albums.remove(album));
   }
 
@@ -93,8 +94,8 @@ public final class Gallery {
 
   public Album createAlbum(String name) {
     Album album = new Album();
+    ((PropertiesImpl) album.getProperties()).get(Properties.NAME_KEY).value(name);
     galleryData.add(album);
-    updateProperty(album, PropertiesImpl.NAME_KEY, name);
     return album;
   }
 
@@ -103,14 +104,18 @@ public final class Gallery {
   }
 
   public void addPhotoToAlbum(Photo photo, Album album) {
-    Preconditions.checkState(galleryData.hasPhoto(photo), "Photo \"%s\" does not exist", photo.getName());
-    Preconditions.checkState(galleryData.hasAlbum(album), "Album \"%s\" does not exist", album.getName());
+    if (!galleryData.hasPhoto(photo))
+      throw new IllegalStateException("Photo \"%s\" does not exist".formatted(photo.getName().orElse(photo.toString())));
+    if (!galleryData.hasAlbum(album))
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName().orElse(album.toString())));
     mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.add(photo));
   }
 
   public void removePhotoFromAlbum(Photo photo, Album album) {
-    Preconditions.checkState(galleryData.hasPhoto(photo), "Photo \"%s\" does not exist", photo.getName());
-    Preconditions.checkState(galleryData.hasAlbum(album), "Album \"%s\" does not exist", album.getName());
+    if (!galleryData.hasPhoto(photo))
+      throw new IllegalStateException("Photo \"%s\" does not exist".formatted(photo.getName().orElse(photo.toString())));
+    if (!galleryData.hasAlbum(album))
+      throw new IllegalStateException("Album \"%s\" does not exist".formatted(album.getName().orElse(album.toString())));
     mutateProperty(album, Properties.PHOTOS_KEY, photos -> photos.remove(photo));
   }
 
@@ -134,9 +139,13 @@ public final class Gallery {
     return galleryData.hasPhoto(name);
   }
 
-  public Photo copyPhoto(Path originalPath) throws IOException {
+  public Photo copyPhoto(Path originalPath) throws Exception {
     if (!Files.exists(originalPath))
-      throw new FileNotFoundException("Photo at \"%s\" does not exist".formatted(originalPath));
+      throw new FileNotFoundException("File at \"%s\" does not exist".formatted(originalPath));
+
+    String mimeType = Files.probeContentType(originalPath);
+    if (mimeType == null || !mimeType.startsWith("image/"))
+      throw new RuntimeException("File at \"%s\" is not a valid image".formatted(originalPath));
 
     Path newPath = path.resolve(originalPath.getFileName());
 
@@ -146,13 +155,13 @@ public final class Gallery {
     Files.copy(originalPath, newPath, StandardCopyOption.COPY_ATTRIBUTES);
 
     Photo photo = new Photo();
+    ((PropertiesImpl) photo.getProperties()).get(Properties.PATH_KEY).value(newPath);
     galleryData.add(photo);
-    updateProperty(photo, Properties.PATH_KEY, newPath);
 
     return photo;
   }
 
-  public Photo cutPhoto(Path originalPath) throws IOException {
+  public Photo cutPhoto(Path originalPath) throws Exception {
     Photo photo = copyPhoto(originalPath);
     Files.deleteIfExists(originalPath);
     return photo;

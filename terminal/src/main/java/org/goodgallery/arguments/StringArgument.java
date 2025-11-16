@@ -1,5 +1,7 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
+
 public class StringArgument extends AbstractArgument<String> {
 
   StringArgument(String name) {
@@ -8,7 +10,7 @@ public class StringArgument extends AbstractArgument<String> {
 
   @Override
   public InternalArgument<String> toInternal() {
-    return toInternal("\"%s\"".formatted(name()), _ -> true, input -> input);
+    return toInternal("\"%s\"".formatted(name()), _ -> true, CommandContext::getGreedyArgs);
   }
 
 }

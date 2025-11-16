@@ -39,7 +39,9 @@ public interface Properties {
       path -> {
         try {
           return Files.readAttributes(path, BasicFileAttributes.class).creationTime().toInstant().toEpochMilli();
-        } catch (IOException e) {
+        } catch (IOException exception) {
+          System.out.println("Failed to get creation time for path: " + path + ", using current time instead.");
+          exception.printStackTrace(System.out);
           return System.currentTimeMillis();
         }
       },

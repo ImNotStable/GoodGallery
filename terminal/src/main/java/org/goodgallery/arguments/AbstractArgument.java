@@ -34,7 +34,7 @@ public abstract class AbstractArgument<I> implements Argument<I> {
     return executable;
   }
 
-  protected InternalArgument<I> toInternal(String usage, Predicate<String> inputValidator, Function<String, I> parser) {
+  protected InternalArgument<I> toInternal(String usage, Predicate<CommandContext> inputValidator, Function<CommandContext, I> parser) {
     return new InternalArgument<>(
       name(),
       arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
@@ -47,13 +47,37 @@ public abstract class AbstractArgument<I> implements Argument<I> {
       }
 
       @Override
-      public boolean isValidInput(String input) {
+      public boolean isValidInput(CommandContext input) {
         return inputValidator.test(input);
       }
 
       @Override
-      public I parse(String input) {
+      public I parse(CommandContext input) {
         return parser.apply(input);
+      }
+    };
+  }
+
+  protected InternalArgument<I> toQuickInternal(String usage, Predicate<String> inputValidator, Function<String, I> parser) {
+    return new InternalArgument<>(
+      name(),
+      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
+      executable()
+    ) {
+
+      @Override
+      public String getUsage() {
+        return usage;
+      }
+
+      @Override
+      public boolean isValidInput(CommandContext input) {
+        return inputValidator.test(input.peakNextArg());
+      }
+
+      @Override
+      public I parse(CommandContext input) {
+        return parser.apply(input.getNextArg());
       }
     };
   }

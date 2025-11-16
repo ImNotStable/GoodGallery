@@ -4,30 +4,33 @@ import org.goodgallery.gallery.data.GalleryData;
 import org.goodgallery.gallery.data.JsonGalleryData;
 import org.goodgallery.gallery.data.SQLiteGalleryData;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-public class GalleryProperties {
+public class GallerySettings {
 
   private String storage = "sqlite";
+  private Path galleryPath = Path.of("gallery");
 
-  public GalleryProperties storage(String storage) {
+  public GallerySettings storage(String storage) {
     this.storage = storage;
     return this;
   }
 
-  public GalleryData storage(Path path) {
+  public GalleryData storage(Path path) throws Exception {
     return switch (storage) {
       case "sqlite" -> new SQLiteGalleryData(path);
-      case "json" -> {
-        try {
-          yield new JsonGalleryData(path);
-        } catch (IOException exception) {
-          throw new RuntimeException("Failed to start Json gallery data", exception);
-        }
-      }
+      case "json" -> new JsonGalleryData(path);
       default -> throw new IllegalArgumentException("Unknown storage type: " + storage);
     };
+  }
+
+  public GallerySettings galleryPath(Path path) {
+    this.galleryPath = path;
+    return this;
+  }
+
+  public Path galleryPath() {
+    return galleryPath;
   }
 
 }

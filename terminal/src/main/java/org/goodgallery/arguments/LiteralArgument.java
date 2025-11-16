@@ -8,7 +8,7 @@ public class LiteralArgument extends AbstractArgument<String> {
 
   @Override
   public InternalArgument<String> toInternal() {
-    return toInternal(name(), input -> name().equalsIgnoreCase(input.toLowerCase()), _ -> name());
+    return toQuickInternal(name(), input -> name().equalsIgnoreCase(input), _ -> name());
   }
 
 }

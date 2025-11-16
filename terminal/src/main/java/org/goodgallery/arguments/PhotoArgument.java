@@ -14,7 +14,7 @@ public class PhotoArgument extends AbstractArgument<Photo> {
 
   @Override
   public InternalArgument<Photo> toInternal() {
-    return toInternal("\"photo\"", gallery::hasPhoto, input -> gallery.getPhoto(input).orElse(null));
+    return toInternal("\"photo\"", context -> gallery.hasPhoto(context.peakGreedyArgs()), context -> gallery.getPhoto(context.getGreedyArgs()).orElse(null));
   }
 
 }

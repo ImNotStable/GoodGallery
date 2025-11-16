@@ -3,10 +3,7 @@ package org.goodgallery;
 import org.goodgallery.arguments.Argument;
 import org.goodgallery.command.Command;
 import org.goodgallery.command.CommandDispatcher;
-import org.goodgallery.gallery.Album;
-import org.goodgallery.gallery.Gallery;
-import org.goodgallery.gallery.GalleryInstance;
-import org.goodgallery.gallery.Photo;
+import org.goodgallery.gallery.*;
 import org.goodgallery.gallery.properties.Properties;
 
 import javax.imageio.ImageIO;
@@ -22,18 +19,19 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-  private static final Path GALLERY_PATH = Paths.get("org/goodgallery/gallery");
+  private static final GallerySettings SETTINGS = new GallerySettings()
+    .storage("sqlite")
+    .galleryPath(Paths.get("gallery"));
+  private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
+  private static final CommandDispatcher DISPATCHER = new CommandDispatcher();
 
   @SuppressWarnings("resource")
   static void main() {
-    Gallery gallery = GalleryInstance.init(GALLERY_PATH);
-    CommandDispatcher dispatcher = new CommandDispatcher();
-
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Photos (%d):%n", gallery.getPhotos().size());
-          for (Photo photo : gallery.getPhotos())
+          context.out().printf("Photos (%d):%n", GALLERY.getPhotos().size());
+          for (Photo photo : GALLERY.getPhotos())
             context.out().printf(" - %s (%s)%n", photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName());
         })
       )
@@ -42,9 +40,9 @@ public class Main {
           .executes(context -> {
             Path path = context.get("path", Path.class);
             try {
-              gallery.copyPhoto(path);
+              GALLERY.copyPhoto(path);
               context.out().println("Successfully copied photo");
-            } catch (IOException e) {
+            } catch (Exception e) {
               context.out().printf("Failed to copy photo due to \"%s\"%n", e.getMessage());
               e.printStackTrace(context.out());
             }
@@ -56,9 +54,9 @@ public class Main {
           .executes(context -> {
             Path path = context.get("path", Path.class);
             try {
-              gallery.cutPhoto(path);
+              GALLERY.cutPhoto(path);
               context.out().println("Successfully cut photo");
-            } catch (IOException e) {
+            } catch (Exception e) {
               context.out().printf("Failed to cut photo due to \"%s\"%n", e.getMessage());
               e.printStackTrace(context.out());
             }
@@ -70,7 +68,7 @@ public class Main {
           .executes(context -> {
               Photo photo = context.get("photo", Photo.class);
               try {
-                gallery.deletePhoto(photo);
+                GALLERY.deletePhoto(photo);
                 context.out().println("Photo deleted successfully");
               } catch (IOException e) {
                 context.out().printf("Failed to delete photo due to \"%s\"%n", e.getMessage());
@@ -86,7 +84,7 @@ public class Main {
             .executes(context -> {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
-              gallery.updateProperty(photo, Properties.NAME_KEY, newName);
+              GALLERY.updateProperty(photo, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )
@@ -136,17 +134,17 @@ public class Main {
           })
         )
       )
-      .register(dispatcher);
+      .register(DISPATCHER);
 
     Command.builder("albums")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Albums (%d):%n", gallery.getAlbums().size());
-          for (Album album : gallery.getAlbums())
+          context.out().printf("Albums (%d):%n", GALLERY.getAlbums().size());
+          for (Album album : GALLERY.getAlbums())
             context.out().printf(" - %s%n%s",
-              album.getName(),
+              album.getName().orElse("Unnamed Album"),
               album.getPhotos().stream()
-                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName()))
+                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName().orElse("unknown")))
                 .collect(Collectors.joining("%n"))
               );
         })
@@ -155,7 +153,7 @@ public class Main {
         .then(Argument.string("album")
           .executes(context -> {
             String name = context.get("album", String.class);
-            gallery.createAlbum(name);
+            GALLERY.createAlbum(name);
             context.out().println("Successfully created album");
           })
         )
@@ -166,7 +164,7 @@ public class Main {
             .executes(context -> {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
-              gallery.updateProperty(album, Properties.NAME_KEY, newName);
+              GALLERY.updateProperty(album, Properties.NAME_KEY, newName);
               context.out().println("Renamed photo successfully");
             })
           )
@@ -176,7 +174,7 @@ public class Main {
         .then(Argument.album("album")
           .executes(context -> {
             Album album = context.get("album", Album.class);
-            gallery.deleteAlbum(album);
+            GALLERY.deleteAlbum(album);
             context.out().println("Successfully deleted album");
           })
         )
@@ -187,7 +185,7 @@ public class Main {
             .executes(context -> {
                 Album album = context.get("album", Album.class);
                 Photo photo = context.get("photo", Photo.class);
-                gallery.addPhotoToAlbum(photo, album);
+                GALLERY.addPhotoToAlbum(photo, album);
                 context.out().println("Successfully added photo to album");
               }
             )
@@ -200,17 +198,17 @@ public class Main {
             .executes(context -> {
               Album album = context.get("album", Album.class);
               Photo photo = context.get("photo", Photo.class);
-              gallery.removePhotoFromAlbum(photo, album);
+              GALLERY.removePhotoFromAlbum(photo, album);
               context.out().println("Successfully removed photo from album");
             })
           )
         )
       )
-      .register(dispatcher);
+      .register(DISPATCHER);
 
     Command.builder("exit")
       .executes(_ -> System.exit(0))
-      .register(dispatcher);
+      .register(DISPATCHER);
   }
 
 }

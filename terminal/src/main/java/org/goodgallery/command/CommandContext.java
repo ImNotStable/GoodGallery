@@ -1,7 +1,6 @@
 package org.goodgallery.command;
 
 import lombok.Getter;
-import org.goodgallery.arguments.InternalArgument;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -13,6 +12,7 @@ public class CommandContext {
   private final PrintStream out;
   @Getter
   private final String label;
+  @Getter
   private final String[] args;
   private int index;
 
@@ -38,16 +38,37 @@ public class CommandContext {
     return out;
   }
 
-  public boolean validateArgument(InternalArgument<?> argument) {
-    return argument.isValidInput(args[index]);
-  }
-
   public boolean hasNextArg() {
     return index < args.length;
   }
 
   public String getNextArg() {
     return args[index++];
+  }
+
+  public String getGreedyArgs() {
+    StringBuilder sb = new StringBuilder();
+    while (hasNextArg()) {
+      sb.append(getNextArg());
+      if (hasNextArg())
+        sb.append(" ");
+    }
+    return sb.toString();
+  }
+
+  public String peakNextArg() {
+    return args[index];
+  }
+
+  public String peakGreedyArgs() {
+    StringBuilder sb = new StringBuilder();
+    int tempIndex = index;
+    while (tempIndex < args.length) {
+      sb.append(args[tempIndex++]);
+      if (tempIndex < args.length)
+        sb.append(" ");
+    }
+    return sb.toString();
   }
 
   public void put(String argumentKey, Object parsedArgument) {

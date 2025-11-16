@@ -14,7 +14,7 @@ public class GroupArgument extends AbstractArgument<Group> {
 
   @Override
   public InternalArgument<Group> toInternal() {
-    return toInternal("\"group\"", gallery::hasGroup, input -> gallery.getGroup(input).orElse(null));
+    return toQuickInternal("\"group\"", gallery::hasGroup, input -> gallery.getGroup(input).orElse(null));
   }
 
 }

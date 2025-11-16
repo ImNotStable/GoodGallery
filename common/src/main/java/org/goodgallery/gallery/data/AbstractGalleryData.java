@@ -64,11 +64,11 @@ public abstract class AbstractGalleryData implements GalleryData {
   }
 
   public Optional<Photo> getPhoto(Path path) {
-    return photosByUUID.values().stream().filter(photo -> photo.getPath().get().equals(path)).findFirst();
+    return photosByUUID.values().stream().filter(photo -> photo.getPath().map(path::equals).orElse(false)).findFirst();
   }
 
   public Optional<Photo> getPhoto(String name) {
-    return photosByUUID.values().stream().filter(photo -> photo.getName().equals(name)).findFirst();
+    return photosByUUID.values().stream().filter(photo -> photo.getName().map(name::equals).orElse(false)).findFirst();
   }
 
   public void remove(Photo photo) {
@@ -102,7 +102,7 @@ public abstract class AbstractGalleryData implements GalleryData {
   }
 
   public Optional<Album> getAlbum(String name) {
-    return albumsByUUID.values().stream().filter(album -> album.getName().equals(name)).findFirst();
+    return albumsByUUID.values().stream().filter(album -> album.getName().map(name::equals).orElse(false)).findFirst();
   }
 
   public void remove(Album album) {
@@ -136,7 +136,7 @@ public abstract class AbstractGalleryData implements GalleryData {
   }
 
   public Optional<Group> getGroup(String name) {
-    return groupsByUUID.values().stream().filter(group -> group.getName().equals(name)).findFirst();
+    return groupsByUUID.values().stream().filter(group -> group.getName().map(name::equals).orElse(false)).findFirst();
   }
 
   public void remove(Group group) {

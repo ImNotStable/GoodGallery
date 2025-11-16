@@ -20,7 +20,7 @@ public final class Group extends GalleryItem {
     super(uniqueId, serializedProperties, DEFAULT_KEYS);
   }
 
-  Group() {
+  public Group() {
     super(DEFAULT_KEYS);
   }
 

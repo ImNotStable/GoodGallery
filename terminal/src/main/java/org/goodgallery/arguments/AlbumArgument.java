@@ -14,7 +14,7 @@ public class AlbumArgument extends AbstractArgument<Album> {
 
   @Override
   public InternalArgument<Album> toInternal() {
-    return toInternal("\"album\"", gallery::hasAlbum, input -> gallery.getAlbum(input).orElse(null));
+    return toQuickInternal("\"album\"", gallery::hasAlbum, input -> gallery.getAlbum(input).orElse(null));
   }
 
 }
