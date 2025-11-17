@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class Main {
 
   private static final GallerySettings SETTINGS = new GallerySettings()
-    .storage("sqlite")
+    .storage(GallerySettings.StorageType.SQLITE)
     .galleryPath(Paths.get("gallery"));
   private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
   private static final CommandDispatcher DISPATCHER = new CommandDispatcher();

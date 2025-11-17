@@ -30,7 +30,7 @@ public record SerializedProperties(Map<String, byte[]> serializedData) implement
     byte[] data = serializedData.get(key.toString());
     if (data == null)
       return Optional.empty();
-    return Optional.ofNullable(key.deserialize(data));
+    return Optional.of(key.deserialize(data));
   }
 
 }

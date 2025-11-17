@@ -8,19 +8,18 @@ import java.nio.file.Path;
 
 public class GallerySettings {
 
-  private String storage = "sqlite";
+  private StorageType storage = StorageType.SQLITE;
   private Path galleryPath = Path.of("gallery");
 
-  public GallerySettings storage(String storage) {
+  public GallerySettings storage(StorageType storage) {
     this.storage = storage;
     return this;
   }
 
   public GalleryData storage(Path path) throws Exception {
     return switch (storage) {
-      case "sqlite" -> new SQLiteGalleryData(path);
-      case "json" -> new JsonGalleryData(path);
-      default -> throw new IllegalArgumentException("Unknown storage type: " + storage);
+      case SQLITE -> new SQLiteGalleryData(path);
+      case JSON -> new JsonGalleryData(path);
     };
   }
 
@@ -31,6 +30,11 @@ public class GallerySettings {
 
   public Path galleryPath() {
     return galleryPath;
+  }
+
+  public enum StorageType {
+    SQLITE,
+    JSON
   }
 
 }

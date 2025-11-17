@@ -48,32 +48,26 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
     }
   }
 
-  private void createConnection(SQLConsumer<Connection> consumer, String failMessage) {
-    try (Connection connection = DriverManager.getConnection(CONNECTION_URL)) {
-      consumer.accept(connection);
+  private Connection createConnection() throws SQLException {
+    return DriverManager.getConnection(CONNECTION_URL);
+  }
+
+  private void createConnectionWithPreparedStatement(String rawPreparedStatement, SQLConsumer<Connection, PreparedStatement> consumer, String failMessage) {
+    try (Connection connection = createConnection();
+         PreparedStatement preparedStatement = connection.prepareStatement(rawPreparedStatement)) {
+      consumer.accept(connection, preparedStatement);
     } catch (SQLException exception) {
       throw new RuntimeException(failMessage, exception);
     }
   }
 
-  private void createConnectionWithPreparedStatement(String rawPreparedStatement, BiSQLConsumer<Connection, PreparedStatement> consumer, String failMessage) {
-    createConnection(connection -> {
-      try (PreparedStatement preparedStatement = connection.prepareStatement(rawPreparedStatement)) {
-        consumer.accept(connection, preparedStatement);
-      } catch (SQLException exception) {
-        throw new RuntimeException(failMessage, exception);
-      }
-    }, failMessage);
-  }
-
-  private void createConnectionWithStatement(BiSQLConsumer<Connection, Statement> consumer, String failMessage) {
-    createConnection(connection -> {
-      try (Statement statement = connection.createStatement()) {
-        consumer.accept(connection, statement);
-      } catch (SQLException exception) {
-        throw new RuntimeException(failMessage, exception);
-      }
-    }, failMessage);
+  private void createConnectionWithStatement(SQLConsumer<Connection, Statement> consumer, String failMessage) {
+    try (Connection connection = createConnection();
+         Statement statement = connection.createStatement()) {
+      consumer.accept(connection, statement);
+    } catch (SQLException exception) {
+      throw new RuntimeException(failMessage, exception);
+    }
   }
 
   @Override
@@ -145,7 +139,7 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
 
   @Override
   protected synchronized void insert(GalleryItem galleryItem) {
-    createConnectionWithPreparedStatement("INSERT INTO gallery_items(unique_id, item_type) VALUES(?,?) ON CONFLICT DO NOTHING",
+    createConnectionWithPreparedStatement("INSERT INTO gallery_items(unique_id, item_type) VALUES(?,?) ON CONFLICT DO NOTHING;",
       (connection, insertItemStatement) -> {
         connection.setAutoCommit(false);
 
@@ -159,7 +153,7 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
           }
         );
         insertItemStatement.executeUpdate();
-        try (PreparedStatement insertPropertyStatement = connection.prepareStatement("INSERT INTO properties(unique_id, \"key\", \"data\") VALUES (?,?,?)")) {
+        try (PreparedStatement insertPropertyStatement = connection.prepareStatement("INSERT INTO properties(unique_id, \"key\", \"data\") VALUES (?,?,?) ON CONFLICT DO NOTHING;")) {
           for (PropertyInstance<?> property : ((PropertiesImpl) galleryItem.getProperties()).all()) {
             insertPropertyStatement.setBytes(1, convertFromUUID(galleryItem.getUniqueId()));
             insertPropertyStatement.setString(2, property.key().toString());
@@ -196,12 +190,10 @@ public final class SQLiteGalleryData extends AbstractGalleryData {
     );
   }
 
-  private interface SQLConsumer<STATEMENT> {
-    void accept(STATEMENT t) throws SQLException;
-  }
+  private interface SQLConsumer<CONNECTION, STATEMENT> {
 
-  private interface BiSQLConsumer<CONNECTION, STATEMENT> {
     void accept(CONNECTION connection, STATEMENT statement) throws SQLException;
+
   }
 
 }

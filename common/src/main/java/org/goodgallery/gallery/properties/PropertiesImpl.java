@@ -13,6 +13,7 @@ public final class PropertiesImpl implements Properties {
 
   public PropertiesImpl(@NotNull SerializedProperties serializedProperties, PropertyKey<?> @NotNull ... keys) {
     this.properties = new HashMap<>();
+
     for (PropertyKey<?> key : keys)
       register(serializedProperties, key);
   }
