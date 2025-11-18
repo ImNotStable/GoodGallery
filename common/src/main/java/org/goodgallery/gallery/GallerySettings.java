@@ -1,6 +1,7 @@
 package org.goodgallery.gallery;
 
 import org.goodgallery.gallery.data.GalleryData;
+import org.goodgallery.gallery.data.H2GalleryData;
 import org.goodgallery.gallery.data.JsonGalleryData;
 import org.goodgallery.gallery.data.SQLiteGalleryData;
 
@@ -19,6 +20,7 @@ public class GallerySettings {
   public GalleryData storage(Path path) throws Exception {
     return switch (storage) {
       case SQLITE -> new SQLiteGalleryData(path);
+      case H2 -> new H2GalleryData(path);
       case JSON -> new JsonGalleryData(path);
     };
   }
@@ -34,6 +36,7 @@ public class GallerySettings {
 
   public enum StorageType {
     SQLITE,
+    H2,
     JSON
   }
 

@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 abstract class AbstractSQLGalleryData extends AbstractGalleryData {
@@ -23,9 +24,9 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
   }
 
   protected abstract @NotNull String getConnectionUrl();
+  protected abstract @NotNull Properties getConnectionProperties();
   protected abstract @NotNull String getInsertItemStatement();
-  protected abstract @NotNull String getDeleteItemStatement();
-  protected abstract @NotNull String getUpdatePropertyStatement();
+  protected abstract @NotNull String getUpsertPropertyStatement();
 
   private byte[] convertFromUUID(@NotNull UUID uniqueId) {
     return ByteBuffer.allocate(Long.BYTES * 2)
@@ -49,7 +50,7 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
   }
 
   private Connection createConnection() throws SQLException {
-    return DriverManager.getConnection(getConnectionUrl());
+    return DriverManager.getConnection(getConnectionUrl(), getConnectionProperties());
   }
 
   private void createConnectionWithPreparedStatement(String rawPreparedStatement, SQLConsumer<Connection, PreparedStatement> consumer, String failMessage) {
@@ -149,11 +150,10 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
             case Photo _ -> "photo";
             case Album _ -> "album";
             case Group _ -> "group";
-            default -> throw new IllegalStateException("Unexpected value: " + galleryItem);
           }
         );
         insertItemStatement.executeUpdate();
-        try (PreparedStatement insertPropertyStatement = connection.prepareStatement(getUpdatePropertyStatement())) {
+        try (PreparedStatement insertPropertyStatement = connection.prepareStatement(getUpsertPropertyStatement())) {
           for (PropertyInstance<?> property : ((PropertiesImpl) galleryItem.getProperties()).all()) {
             insertPropertyStatement.setBytes(1, convertFromUUID(galleryItem.getUniqueId()));
             insertPropertyStatement.setString(2, property.key().toString());
@@ -171,7 +171,7 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
 
   @Override
   protected synchronized void delete(GalleryItem galleryItem) {
-    createConnectionWithPreparedStatement(getDeleteItemStatement(),
+    createConnectionWithPreparedStatement("DELETE FROM gallery_items WHERE unique_id = ?",
       (_, preparedStatement) -> {
         preparedStatement.setBytes(1, convertFromUUID(galleryItem.getUniqueId()));
         preparedStatement.executeUpdate();
@@ -180,7 +180,7 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
 
   @Override
   public synchronized void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property) {
-    createConnectionWithPreparedStatement(getUpdatePropertyStatement(),
+    createConnectionWithPreparedStatement(getUpsertPropertyStatement(),
       (_, preparedStatement) -> {
         preparedStatement.setBytes(1, convertFromUUID(galleryItem.getUniqueId()));
         preparedStatement.setString(2, property.key().toString());

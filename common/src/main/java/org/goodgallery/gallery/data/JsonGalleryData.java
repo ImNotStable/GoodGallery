@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -48,8 +49,12 @@ public final class JsonGalleryData extends AbstractGalleryData {
     JsonObject sectionJson = json.getAsJsonObject(section);
     for (String key : sectionJson.keySet()) {
       UUID uniqueId = UUID.fromString(key);
-      T galleryItem = generator.apply(uniqueId, new SerializedProperties(GSON, sectionJson.getAsJsonObject(key)));
-      map.put(uniqueId, galleryItem);
+
+      Map<String, byte[]> serializedData = new HashMap<>();
+      for (String propertyKey : json.keySet())
+        serializedData.put(propertyKey, GSON.fromJson(json.get(propertyKey), byte[].class));
+
+      map.put(uniqueId, generator.apply(uniqueId, new SerializedProperties(serializedData)));
     }
   }
 
@@ -59,7 +64,6 @@ public final class JsonGalleryData extends AbstractGalleryData {
         case Photo _ -> "photos";
         case Album _ -> "albums";
         case Group _ -> "groups";
-        default -> throw new IllegalStateException();
       }
     );
   }

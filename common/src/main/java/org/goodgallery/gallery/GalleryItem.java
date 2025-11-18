@@ -9,7 +9,7 @@ import org.goodgallery.gallery.properties.SerializedProperties;
 import java.util.Optional;
 import java.util.UUID;
 
-public abstract class GalleryItem {
+public abstract sealed class GalleryItem permits Album, Group, Photo {
 
   @Getter
   private final UUID uniqueId;

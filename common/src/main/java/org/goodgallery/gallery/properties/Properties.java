@@ -28,25 +28,22 @@ public interface Properties {
     name -> name.getBytes(StandardCharsets.UTF_8),
     data -> new String(data, StandardCharsets.UTF_8)
   ).defaultProvider(
-    properties -> properties.getTransformedValue(PATH_KEY, path -> path.getFileName().toString()).orElse("unknown")
+    properties -> properties.getValue(PATH_KEY).map(Path::getFileName).map(Path::toString).orElse("unknown")
   );
 
   PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp",
     timestamp -> ByteBuffer.allocate(Long.BYTES).putLong(timestamp).array(),
     data -> ByteBuffer.wrap(data).getLong()
-  ).defaultProvider(properties ->
-    properties.getTransformedValueOrDefault(PATH_KEY,
-      path -> {
-        try {
-          return Files.readAttributes(path, BasicFileAttributes.class).creationTime().toInstant().toEpochMilli();
-        } catch (IOException exception) {
-          System.out.println("Failed to get creation time for path: " + path + ", using current time instead.");
-          exception.printStackTrace(System.out);
-          return System.currentTimeMillis();
-        }
-      },
-      System.currentTimeMillis()
-    )
+  ).defaultProvider(properties -> properties.getValue(PATH_KEY).map(
+    path -> {
+      try {
+        return Files.readAttributes(path, BasicFileAttributes.class).creationTime().toInstant().toEpochMilli();
+      } catch (IOException exception) {
+        System.out.println("Failed to get creation time for path: " + path + ", using current time instead.");
+        exception.printStackTrace(System.out);
+        return System.currentTimeMillis();
+      }
+    }).orElse(System.currentTimeMillis())
   );
 
   PropertyKey<Set<Photo>> PHOTOS_KEY = new PropertyKey<>("photos",
@@ -72,9 +69,8 @@ public interface Properties {
   private static <T extends GalleryItem> Set<T> deserializeGalleryItems(byte[] data, Function<UUID, Optional<T>> deserializer) {
     ByteBuffer byteBuffer = ByteBuffer.wrap(data);
     Set<T> items = new HashSet<>((data.length / (Long.BYTES * 2)));
-    while (byteBuffer.hasRemaining()) {
+    while (byteBuffer.hasRemaining())
       deserializer.apply(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(items::add);
-    }
     return items;
   }
 
@@ -82,22 +78,6 @@ public interface Properties {
 
   default <T> Optional<T> getValueOrKeyDefault(PropertyKey<T> key) {
     return getValue(key).or(() -> key.getDefaultValue(this));
-  }
-
-  default <T> T getValueOrDefault(PropertyKey<T> key, T defaultValue) {
-    return getValue(key).orElse(defaultValue);
-  }
-
-  default <T, O> Optional<O> getTransformedValue(PropertyKey<T> key, Function<T, O> transformer) {
-    return getValue(key).map(transformer);
-  }
-
-  default <T, O> Optional<O> getTransformedValueOrKeyDefault(PropertyKey<T> key, Function<T, O> transformer) {
-    return getValueOrKeyDefault(key).map(transformer);
-  }
-
-  default <T, O> O getTransformedValueOrDefault(PropertyKey<T> key, Function<T, O> transformer, O defaultValue) {
-    return getValue(key).map(transformer).orElse(defaultValue);
   }
 
 }
