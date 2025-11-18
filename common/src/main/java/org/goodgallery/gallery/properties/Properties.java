@@ -71,7 +71,7 @@ public interface Properties {
 
   private static <T extends GalleryItem> Set<T> deserializeGalleryItems(byte[] data, Function<UUID, Optional<T>> deserializer) {
     ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-    Set<T> items = new HashSet<>((data.length / (Long.BYTES * 2)) + 1, 1);
+    Set<T> items = new HashSet<>((data.length / (Long.BYTES * 2)));
     while (byteBuffer.hasRemaining()) {
       deserializer.apply(new UUID(byteBuffer.getLong(), byteBuffer.getLong())).ifPresent(items::add);
     }

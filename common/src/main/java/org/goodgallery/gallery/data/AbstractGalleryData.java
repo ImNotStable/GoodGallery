@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractGalleryData implements GalleryData {
+abstract class AbstractGalleryData implements GalleryData {
 
   protected final Path path;
 
@@ -142,11 +142,6 @@ public abstract class AbstractGalleryData implements GalleryData {
   public void remove(Group group) {
     delete(group);
     groupsByUUID.remove(group.getUniqueId());
-  }
-
-  @Override
-  public void close() {
-
   }
 
 }

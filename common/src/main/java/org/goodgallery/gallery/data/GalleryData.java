@@ -6,13 +6,12 @@ import org.goodgallery.gallery.Group;
 import org.goodgallery.gallery.Photo;
 import org.goodgallery.gallery.properties.PropertyInstance;
 
-import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface GalleryData extends Closeable {
+public interface GalleryData {
 
   void add(Photo photo);
 
@@ -73,7 +72,5 @@ public interface GalleryData extends Closeable {
   void remove(Group group);
 
   void updateProperty(GalleryItem galleryItem, PropertyInstance<?> property);
-
-  void close();
 
 }

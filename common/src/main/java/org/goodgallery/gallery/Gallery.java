@@ -186,8 +186,4 @@ public final class Gallery {
     galleryData.updateProperty(galleryItem, property);
   }
 
-  public <T> Optional<T> getPropertyValue(GalleryItem galleryItem, PropertyKey<T> key) {
-    return galleryItem.getPropertyValue(key);
-  }
-
 }

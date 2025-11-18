@@ -4,15 +4,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
-public final class SQLiteGalleryData extends AbstractSQLGalleryData {
+public final class H2GalleryData extends AbstractSQLGalleryData {
 
-  public SQLiteGalleryData(Path path) {
+  public H2GalleryData(Path path) {
     super(path.resolve("gallery.sqlite"));
   }
 
   @Override
   protected @NotNull String getConnectionUrl() {
-    return String.format("jdbc:sqlite:%s", path.toAbsolutePath());
+    return String.format("jdbc:h2:%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE", path.toAbsolutePath());
   }
 
   @Override
@@ -27,7 +27,7 @@ public final class SQLiteGalleryData extends AbstractSQLGalleryData {
 
   @Override
   protected @NotNull String getUpdatePropertyStatement() {
-    return "INSERT INTO properties(unique_id, \"key\", \"data\") VALUES (?,?,?) ON CONFLICT(unique_id, \"key\") DO UPDATE SET \"data\" = excluded.data";
+    return "MERGE INTO properties(unique_id, \"key\", \"data\") KEY(unique_id, \"key\") VALUES (?,?,?)";
   }
 
 }
