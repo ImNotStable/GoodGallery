@@ -31,8 +31,12 @@ public class Main {
       .then(Argument.literal("list")
         .executes(context -> {
           context.out().printf("Photos (%d):%n", GALLERY.getPhotos().size());
-          for (Photo photo : GALLERY.getPhotos())
-            context.out().printf(" - %s (%s)%n", photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName());
+          for (Photo photo : GALLERY.getPhotos()) {
+            Optional<String> name = photo.getName();
+            Optional<Path> path = photo.getPath();
+            if (name.isEmpty() || path.isEmpty()) continue;
+            context.out().printf(" - %s (%s)%n", name.get(), path.get());
+          }
         })
       )
       .then(Argument.literal("copy")
@@ -94,7 +98,6 @@ public class Main {
         .then(Argument.photo("photo")
           .executes(context -> {
             Photo photo = context.get("photo", Photo.class);
-
 
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

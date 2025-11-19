@@ -28,7 +28,7 @@ public interface Properties {
     name -> name.getBytes(StandardCharsets.UTF_8),
     data -> new String(data, StandardCharsets.UTF_8)
   ).defaultProvider(
-    properties -> properties.getValue(PATH_KEY).map(Path::getFileName).map(Path::toString).orElse("unknown")
+    properties -> properties.getValue(PATH_KEY).map(Path::getFileName).map(Path::toString).orElse(null)
   );
 
   PropertyKey<Long> CREATION_TIMESTAMP_KEY = new PropertyKey<>("creation_timestamp",

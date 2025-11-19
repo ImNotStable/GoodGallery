@@ -3,11 +3,43 @@ package org.goodgallery.command;
 import lombok.Getter;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CommandContext {
+
+  private static String[] tokenize(String rawCommand) {
+    List<String> tokens = new ArrayList<>();
+
+    tokens.add(rawCommand.split(" ")[0]);
+    rawCommand = rawCommand.substring(tokens.getFirst().length()).trim();
+    StringBuilder currentToken = new StringBuilder();
+    boolean escapeNext = false;
+    boolean inQuotes = false;
+
+    for (char c : rawCommand.toCharArray()) {
+      if (escapeNext) {
+        currentToken.append(c);
+        escapeNext = false;
+      }
+      else if (c == '"')
+        inQuotes = !inQuotes;
+      else if (inQuotes)
+        currentToken.append(c);
+      else if (c == '\\')
+        escapeNext = true;
+      else if (Character.isWhitespace(c)) {
+        if (!currentToken.isEmpty()) {
+          tokens.add(currentToken.toString());
+          currentToken.setLength(0);
+        }
+      } else
+        currentToken.append(c);
+    }
+    if (!currentToken.isEmpty())
+      tokens.add(currentToken.toString());
+
+    return tokens.toArray(new String[0]);
+  }
 
   private final PrintStream out;
   @Getter
@@ -31,7 +63,7 @@ public class CommandContext {
   }
 
   public CommandContext(PrintStream out, String rawCommand) {
-    this(out, rawCommand.split(" "));
+    this(out, tokenize(rawCommand));
   }
 
   public PrintStream out() {
