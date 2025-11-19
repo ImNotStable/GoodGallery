@@ -21,7 +21,7 @@ public interface Properties {
 
   PropertyKey<Path> PATH_KEY = new PropertyKey<>("path",
     path -> path.toString().getBytes(StandardCharsets.UTF_8),
-    data -> Path.of(new String(data))
+    data -> Path.of(new String(data, StandardCharsets.UTF_8))
   );
 
   PropertyKey<String> NAME_KEY = new PropertyKey<>("name",

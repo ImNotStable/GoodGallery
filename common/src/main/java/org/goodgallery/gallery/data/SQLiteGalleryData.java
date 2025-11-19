@@ -27,7 +27,7 @@ public final class SQLiteGalleryData extends AbstractSQLGalleryData {
     config.setEncoding(SQLiteConfig.Encoding.UTF8);
     connectionProperties = config.toProperties();
 
-    super(path.resolve("gallery.sqlite"));
+    super(path);
   }
 
 }

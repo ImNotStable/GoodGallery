@@ -45,6 +45,10 @@ public final class Gallery {
     return galleryData.getGroup(name);
   }
 
+  public boolean hasGroup(UUID uniqueId) {
+    return galleryData.hasGroup(uniqueId);
+  }
+
   public boolean hasGroup(String name) {
     return galleryData.hasGroup(name);
   }
@@ -86,6 +90,10 @@ public final class Gallery {
 
   public Optional<Album> getAlbum(String name) {
     return galleryData.getAlbum(name);
+  }
+
+  public boolean hasAlbum(UUID uniqueId) {
+    return galleryData.hasAlbum(uniqueId);
   }
 
   public boolean hasAlbum(String name) {
@@ -133,6 +141,14 @@ public final class Gallery {
 
   public Optional<Photo> getPhoto(String name) {
     return galleryData.getPhoto(name);
+  }
+
+  public boolean hasPhoto(UUID uniqueId) {
+    return galleryData.hasPhoto(uniqueId);
+  }
+
+  public boolean hasPhoto(Path path) {
+    return galleryData.hasPhoto(path);
   }
 
   public boolean hasPhoto(String name) {

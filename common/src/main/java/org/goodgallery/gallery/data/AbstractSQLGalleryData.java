@@ -155,6 +155,8 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
         insertItemStatement.executeUpdate();
         try (PreparedStatement insertPropertyStatement = connection.prepareStatement(getUpsertPropertyStatement())) {
           for (PropertyInstance<?> property : ((PropertiesImpl) galleryItem.getProperties()).all()) {
+            if (property.value().isEmpty())
+              continue;
             insertPropertyStatement.setBytes(1, convertFromUUID(galleryItem.getUniqueId()));
             insertPropertyStatement.setString(2, property.key().toString());
             insertPropertyStatement.setBytes(3, property.serialize());

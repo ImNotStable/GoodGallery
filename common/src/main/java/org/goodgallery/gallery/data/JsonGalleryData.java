@@ -90,7 +90,9 @@ public final class JsonGalleryData extends AbstractGalleryData {
   @Override
   protected synchronized void insert(GalleryItem galleryItem) {
     getParent(galleryItem).add(galleryItem.toString(), new JsonObject());
-    ((PropertiesImpl) galleryItem.getProperties()).all().forEach(
+    ((PropertiesImpl) galleryItem.getProperties()).all().stream()
+      .filter(property -> property.value().isPresent())
+      .forEach(
       property -> findProperties(galleryItem).add(property.key().toString(), GSON.toJsonTree(property.serialize(), byte[].class))
     );
     save();
