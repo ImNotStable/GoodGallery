@@ -39,9 +39,8 @@ public class CommandDispatcher implements Closeable {
     Command.builder("help")
       .executes(_ -> {
         out.println("Available commands:");
-        for (Command command : commands.values()) {
+        for (Command command : commands.values())
           out.printf(" - %s%n", command.toString());
-        }
       })
       .register(this);
   }
@@ -52,7 +51,7 @@ public class CommandDispatcher implements Closeable {
       Scanner scanner = new Scanner(in);
 
       while (isActive) {
-        out.print("BPG > ");
+        out.print("GoodGallery > ");
         String command = scanner.nextLine();
         CommandContext context = new CommandContext(out, command);
         execute(context);

@@ -1,5 +1,7 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
+
 public class LiteralArgument extends AbstractArgument<String> {
 
   protected LiteralArgument(String literal) {
@@ -7,8 +9,18 @@ public class LiteralArgument extends AbstractArgument<String> {
   }
 
   @Override
-  public InternalArgument<String> toInternal() {
-    return toQuickInternal(name(), input -> name().equalsIgnoreCase(input), _ -> name());
+  protected String getUsage() {
+    return name();
+  }
+
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return name().equalsIgnoreCase(context.peak());
+  }
+
+  @Override
+  protected String parse(CommandContext context) {
+    return context.next();
   }
 
 }

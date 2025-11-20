@@ -5,8 +5,6 @@ import org.goodgallery.command.CommandContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public abstract class AbstractArgument<I> implements Argument<I> {
@@ -22,6 +20,10 @@ public abstract class AbstractArgument<I> implements Argument<I> {
     };
   }
 
+  protected abstract String getUsage();
+  protected abstract boolean isValidInput(CommandContext context);
+  protected abstract I parse(CommandContext context);
+
   protected String name() {
     return name;
   }
@@ -34,7 +36,7 @@ public abstract class AbstractArgument<I> implements Argument<I> {
     return executable;
   }
 
-  protected InternalArgument<I> toInternal(String usage, Predicate<CommandContext> inputValidator, Function<CommandContext, I> parser) {
+  public InternalArgument<I> toInternal() {
     return new InternalArgument<>(
       name(),
       arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
@@ -43,41 +45,17 @@ public abstract class AbstractArgument<I> implements Argument<I> {
 
       @Override
       public String getUsage() {
-        return usage;
+        return AbstractArgument.this.getUsage();
       }
 
       @Override
       public boolean isValidInput(CommandContext input) {
-        return inputValidator.test(input);
+        return AbstractArgument.this.isValidInput(input);
       }
 
       @Override
       public I parse(CommandContext input) {
-        return parser.apply(input);
-      }
-    };
-  }
-
-  protected InternalArgument<I> toQuickInternal(String usage, Predicate<String> inputValidator, Function<String, I> parser) {
-    return new InternalArgument<>(
-      name(),
-      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
-      executable()
-    ) {
-
-      @Override
-      public String getUsage() {
-        return usage;
-      }
-
-      @Override
-      public boolean isValidInput(CommandContext input) {
-        return inputValidator.test(input.peakNextArg());
-      }
-
-      @Override
-      public I parse(CommandContext input) {
-        return parser.apply(input.getNextArg());
+        return AbstractArgument.this.parse(input);
       }
     };
   }

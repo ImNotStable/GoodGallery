@@ -35,7 +35,7 @@ public abstract class InternalArgument<O> {
 
     context.put(name, arg);
 
-    if (!context.hasNextArg()) {
+    if (!context.hasNext()) {
       executable.accept(context);
       return true;
     }

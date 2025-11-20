@@ -1,5 +1,6 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
 import org.goodgallery.gallery.Gallery;
 import org.goodgallery.gallery.Group;
 
@@ -13,8 +14,18 @@ public class GroupArgument extends AbstractArgument<Group> {
   }
 
   @Override
-  public InternalArgument<Group> toInternal() {
-    return toQuickInternal("\"group\"", gallery::hasGroup, input -> gallery.getGroup(input).orElse(null));
+  protected String getUsage() {
+    return "<group>";
+  }
+
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return gallery.hasGroup(context.peak());
+  }
+
+  @Override
+  protected Group parse(CommandContext context) {
+    return gallery.getGroup(context.next()).orElse(null);
   }
 
 }

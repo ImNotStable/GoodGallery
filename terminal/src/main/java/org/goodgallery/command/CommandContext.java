@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.io.PrintStream;
 import java.util.*;
 
-public class CommandContext {
+public class CommandContext implements Iterator<String> {
 
   private static String[] tokenize(String rawCommand) {
     List<String> tokens = new ArrayList<>();
@@ -70,37 +70,16 @@ public class CommandContext {
     return out;
   }
 
-  public boolean hasNextArg() {
+  public boolean hasNext() {
     return index < args.length;
   }
 
-  public String getNextArg() {
-    return args[index++];
-  }
-
-  public String getGreedyArgs() {
-    StringBuilder sb = new StringBuilder();
-    while (hasNextArg()) {
-      sb.append(getNextArg());
-      if (hasNextArg())
-        sb.append(" ");
-    }
-    return sb.toString();
-  }
-
-  public String peakNextArg() {
+  public String peak() {
     return args[index];
   }
 
-  public String peakGreedyArgs() {
-    StringBuilder sb = new StringBuilder();
-    int tempIndex = index;
-    while (tempIndex < args.length) {
-      sb.append(args[tempIndex++]);
-      if (tempIndex < args.length)
-        sb.append(" ");
-    }
-    return sb.toString();
+  public String next() {
+    return args[index++];
   }
 
   public void put(String argumentKey, Object parsedArgument) {

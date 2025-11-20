@@ -9,8 +9,18 @@ public class StringArgument extends AbstractArgument<String> {
   }
 
   @Override
-  public InternalArgument<String> toInternal() {
-    return toInternal("\"%s\"".formatted(name()), _ -> true, CommandContext::getGreedyArgs);
+  protected String getUsage() {
+    return "<%s>".formatted(name());
+  }
+
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return true;
+  }
+
+  @Override
+  protected String parse(CommandContext context) {
+    return context.next();
   }
 
 }

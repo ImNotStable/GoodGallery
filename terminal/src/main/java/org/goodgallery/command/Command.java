@@ -35,7 +35,7 @@ public final class Command {
   }
 
   public boolean execute(CommandContext context) {
-    if (!context.hasNextArg()) {
+    if (!context.hasNext()) {
       executable.accept(context);
       return true;
     }

@@ -1,5 +1,8 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
+
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 public class PathArgument extends AbstractArgument<Path> {
@@ -9,8 +12,23 @@ public class PathArgument extends AbstractArgument<Path> {
   }
 
   @Override
-  public InternalArgument<Path> toInternal() {
-    return toInternal("\"path\"", _ -> true, context -> Path.of(context.getGreedyArgs()).normalize().toAbsolutePath());
+  protected String getUsage() {
+    return "<path>";
+  }
+
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    try {
+      context.next();
+      return true;
+    } catch (InvalidPathException _) {
+      return false;
+    }
+  }
+
+  @Override
+  protected Path parse(CommandContext context) {
+    return Path.of(context.next());
   }
 
 }
