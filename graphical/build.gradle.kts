@@ -1,23 +1,17 @@
 plugins {
-  id("org.openjfx.javafxplugin") version "0.1.0"
+  id("org.springframework.boot") version "3.3.5"
+  id("io.spring.dependency-management") version "1.1.6"
   application
 }
 
-javafx {
-  version = "23.0.1"
-  modules = listOf("javafx.controls", "javafx.fxml", "javafx.swing")
+dependencies {
+  implementation(platform("org.springframework.boot:spring-boot-dependencies:3.3.5"))
+  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+  implementation(project(":common"))
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 application {
-  mainClass.set("org.goodgallery.Main")
-}
-
-dependencies {
-  implementation(project(":common"))
-}
-
-tasks.named<JavaExec>("run") {
-  doFirst {
-    println("Running GoodGallery with JavaFX...")
-  }
+  mainClass.set("org.goodgallery.graphical.GraphicalApplication")
 }

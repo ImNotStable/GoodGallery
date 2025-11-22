@@ -24,7 +24,7 @@ public abstract sealed class GalleryItem permits Album, Group, Photo {
     this(UUID.randomUUID(), new SerializedProperties(), defaultKeys);
   }
 
-  public Properties getProperties() {
+  public Properties<?> getProperties() {
     return properties;
   }
 

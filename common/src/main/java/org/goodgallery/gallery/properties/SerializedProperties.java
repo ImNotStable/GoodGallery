@@ -1,11 +1,8 @@
 package org.goodgallery.gallery.properties;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public record SerializedProperties(Map<String, byte[]> serializedData) implements Properties {
+public record SerializedProperties(Map<String, byte[]> serializedData) implements Properties<byte[]> {
 
   public SerializedProperties () {
     this(new HashMap<>());
@@ -13,6 +10,11 @@ public record SerializedProperties(Map<String, byte[]> serializedData) implement
 
   public SerializedProperties(Map<String, byte[]> serializedData) {
     this.serializedData = Collections.unmodifiableMap(serializedData != null ? serializedData : new HashMap<>());
+  }
+
+  @Override
+  public Collection<byte[]> all() {
+    return serializedData.values();
   }
 
   @Override

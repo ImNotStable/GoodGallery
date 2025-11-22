@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class PropertiesImpl implements Properties {
+public final class PropertiesImpl implements Properties<PropertyInstance<?>> {
 
   private final Map<PropertyKey<?>, PropertyInstance<?>> properties;
 
@@ -25,6 +25,7 @@ public final class PropertiesImpl implements Properties {
     );
   }
 
+  @Override
   public Collection<PropertyInstance<?>> all() {
     return properties.values();
   }
@@ -39,6 +40,7 @@ public final class PropertiesImpl implements Properties {
     return typedInstance;
   }
 
+  @Override
   public <T> Optional<T> getValue(PropertyKey<T> key) {
     return get(key).value();
   }

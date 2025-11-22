@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -25,8 +26,19 @@ public class Main {
   private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
   private static final CommandDispatcher DISPATCHER = new CommandDispatcher();
 
+  private static Image icon;
+
   @SuppressWarnings("resource")
   static void main() {
+    try {
+      URL iconURL = Main.class.getResource("/icon.png");
+      if (iconURL == null)
+        throw new RuntimeException("Icon resource not found");
+      icon = ImageIO.read(iconURL);
+    } catch (IOException exception) {
+      throw new RuntimeException(exception);
+    }
+
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {
@@ -34,7 +46,9 @@ public class Main {
           for (Photo photo : GALLERY.getPhotos()) {
             Optional<String> name = photo.getName();
             Optional<Path> path = photo.getPath();
+
             if (name.isEmpty() || path.isEmpty()) continue;
+
             context.out().printf(" - %s (%s)%n", name.get(), path.get());
           }
         })
@@ -100,16 +114,18 @@ public class Main {
             Photo photo = context.get("photo", Photo.class);
 
             JFrame frame = new JFrame();
+            frame.setIconImage(icon);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
+            Optional<File> photoFile = photo.getPath().map(Path::toFile);
+            if (photoFile.isEmpty()) {
+              context.out().println("Photo has no associated file path");
+              return;
+            }
+
             BufferedImage originalImage;
             try {
-              Optional<File> photoFile = photo.getPath().map(Path::toFile);
-              if (photoFile.isEmpty()) {
-                context.out().println("Photo has no associated file path");
-                return;
-              }
               originalImage = ImageIO.read(photoFile.get());
             } catch (IOException e) {
               context.out().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
@@ -143,13 +159,23 @@ public class Main {
       .then(Argument.literal("list")
         .executes(context -> {
           context.out().printf("Albums (%d):%n", GALLERY.getAlbums().size());
-          for (Album album : GALLERY.getAlbums())
-            context.out().printf(" - %s%n%s",
-              album.getName().orElse("Unnamed Album"),
-              album.getPhotos().stream()
-                .map(photo -> "  * %s (%s)".formatted(photo.getPropertyValue(Properties.NAME_KEY), photo.getFileName().orElse("unknown")))
-                .collect(Collectors.joining("%n"))
-              );
+
+          for (Album album : GALLERY.getAlbums()) {
+            Optional<String> name = album.getName();
+
+            if (name.isEmpty()) continue;
+
+            String photos = album.getPhotos().stream().map(photo -> {
+              Optional<String> photoName = photo.getName();
+              Optional<Path> photoPath = photo.getPath();
+
+              if (photoName.isEmpty() || photoPath.isEmpty()) return null;
+
+              return "  * %s (%s)".formatted(photoName.get(), photoPath.get());
+            }).collect(Collectors.joining("%n"));
+
+            context.out().printf(" - %s%n%s", name.get(), photos);
+          }
         })
       )
       .then(Argument.literal("create")

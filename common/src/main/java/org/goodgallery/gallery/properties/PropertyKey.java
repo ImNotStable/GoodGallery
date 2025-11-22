@@ -9,7 +9,7 @@ public final class PropertyKey<T> {
   private final Function<T,  byte[]> serializer;
   private final Function<byte[], T> deserializer;
 
-  private Function<Properties, T> defaultProvider = _ -> null;
+  private Function<Properties<?>, T> defaultProvider = _ -> null;
 
   public PropertyKey(String id, Function<T, byte[]> serializer, Function<byte[], T> deserializer) {
     this.id = id;
@@ -28,12 +28,12 @@ public final class PropertyKey<T> {
     return deserializer.apply(serializedData);
   }
 
-  public PropertyKey<T> defaultProvider(Function<Properties, T> defaultProvider) {
+  public PropertyKey<T> defaultProvider(Function<Properties<?>, T> defaultProvider) {
     this.defaultProvider = defaultProvider;
     return this;
   }
 
-  public Optional<T> getDefaultValue(Properties properties) {
+  public Optional<T> getDefaultValue(Properties<?> properties) {
     return Optional.ofNullable(defaultProvider.apply(properties));
   }
 

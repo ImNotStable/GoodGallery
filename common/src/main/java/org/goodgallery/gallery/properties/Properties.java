@@ -4,6 +4,7 @@ import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.GalleryInstance;
 import org.goodgallery.gallery.GalleryItem;
 import org.goodgallery.gallery.Photo;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,13 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
-public interface Properties {
+public interface Properties<N> extends Iterable<N> {
 
   PropertyKey<Path> PATH_KEY = new PropertyKey<>("path",
     path -> path.toString().getBytes(StandardCharsets.UTF_8),
@@ -74,10 +72,17 @@ public interface Properties {
     return items;
   }
 
+  Collection<N> all();
+
   <T> Optional<T> getValue(PropertyKey<T> key);
 
   default <T> Optional<T> getValueOrKeyDefault(PropertyKey<T> key) {
     return getValue(key).or(() -> key.getDefaultValue(this));
+  }
+
+  @Override
+  default @NotNull Iterator<N> iterator() {
+    return all().iterator();
   }
 
 }
