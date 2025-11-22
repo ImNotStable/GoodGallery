@@ -1,9 +1,8 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
 import org.goodgallery.gallery.Gallery;
 import org.goodgallery.gallery.Group;
-
-import java.util.stream.Collectors;
 
 public class GroupArgument extends AbstractArgument<Group> {
 
@@ -15,27 +14,18 @@ public class GroupArgument extends AbstractArgument<Group> {
   }
 
   @Override
-  public InternalArgument<Group> toInternal() {
-    return new InternalArgumentImpl<>(
-      name(),
-      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
-      executable()
-    ) {
-      @Override
-      public String getUsageForm() {
-        return "\"group\"";
-      }
+  protected String getUsage() {
+    return "<group>";
+  }
 
-      @Override
-      public boolean isValidInput(String input) {
-        return gallery.hasGroup(input);
-      }
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return gallery.hasGroup(context.peak());
+  }
 
-      @Override
-      public Group parse(String input) {
-        return gallery.getGroup(input);
-      }
-    };
+  @Override
+  protected Group parse(CommandContext context) {
+    return gallery.getGroup(context.next()).orElse(null);
   }
 
 }

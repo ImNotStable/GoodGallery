@@ -1,9 +1,8 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
 import org.goodgallery.gallery.Gallery;
 import org.goodgallery.gallery.Photo;
-
-import java.util.stream.Collectors;
 
 public class PhotoArgument extends AbstractArgument<Photo> {
 
@@ -15,27 +14,18 @@ public class PhotoArgument extends AbstractArgument<Photo> {
   }
 
   @Override
-  public InternalArgument<Photo> toInternal() {
-    return new InternalArgumentImpl<>(
-      name(),
-      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
-      executable()
-    ) {
-      @Override
-      public String getUsageForm() {
-        return "\"photo\"";
-      }
+  protected String getUsage() {
+    return "<photo>";
+  }
 
-      @Override
-      public boolean isValidInput(String input) {
-        return gallery.hasPhoto(input);
-      }
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return gallery.hasPhoto(context.peak());
+  }
 
-      @Override
-      public Photo parse(String input) {
-        return gallery.getPhoto(input);
-      }
-    };
+  @Override
+  protected Photo parse(CommandContext context) {
+    return gallery.getPhoto(context.next()).orElse(null);
   }
 
 }

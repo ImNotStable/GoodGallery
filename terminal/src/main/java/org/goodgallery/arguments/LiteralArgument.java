@@ -1,6 +1,6 @@
 package org.goodgallery.arguments;
 
-import java.util.stream.Collectors;
+import org.goodgallery.command.CommandContext;
 
 public class LiteralArgument extends AbstractArgument<String> {
 
@@ -9,29 +9,18 @@ public class LiteralArgument extends AbstractArgument<String> {
   }
 
   @Override
-  public InternalArgument<String> toInternal() {
-    return new InternalArgumentImpl<>(
-      name(),
-      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
-      executable()
-    ) {
+  protected String getUsage() {
+    return name();
+  }
 
-      @Override
-      public String getUsageForm() {
-        return name();
-      }
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return name().equalsIgnoreCase(context.peak());
+  }
 
-      @Override
-      public boolean isValidInput(String input) {
-        return name().equalsIgnoreCase(input.toLowerCase());
-      }
-
-      @Override
-      public String parse(String input) {
-        return name();
-      }
-
-    };
+  @Override
+  protected String parse(CommandContext context) {
+    return context.next();
   }
 
 }

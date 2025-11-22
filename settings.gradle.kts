@@ -1,3 +1,2 @@
 rootProject.name = "GoodGallery"
-include("terminal")
-include("jframe")
+include("common", "terminal", "graphical")

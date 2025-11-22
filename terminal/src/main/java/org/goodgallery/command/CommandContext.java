@@ -1,27 +1,56 @@
 package org.goodgallery.command;
 
 import lombok.Getter;
-import org.goodgallery.arguments.InternalArgument;
 
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class CommandContext {
+public class CommandContext implements Iterator<String> {
 
-  private final InputStream in;
+  private static String[] tokenize(String rawCommand) {
+    List<String> tokens = new ArrayList<>();
+
+    tokens.add(rawCommand.split(" ")[0]);
+    rawCommand = rawCommand.substring(tokens.getFirst().length()).trim();
+    StringBuilder currentToken = new StringBuilder();
+    boolean escapeNext = false;
+    boolean inQuotes = false;
+
+    for (char c : rawCommand.toCharArray()) {
+      if (escapeNext) {
+        currentToken.append(c);
+        escapeNext = false;
+      }
+      else if (c == '"')
+        inQuotes = !inQuotes;
+      else if (inQuotes)
+        currentToken.append(c);
+      else if (c == '\\')
+        escapeNext = true;
+      else if (Character.isWhitespace(c)) {
+        if (!currentToken.isEmpty()) {
+          tokens.add(currentToken.toString());
+          currentToken.setLength(0);
+        }
+      } else
+        currentToken.append(c);
+    }
+    if (!currentToken.isEmpty())
+      tokens.add(currentToken.toString());
+
+    return tokens.toArray(new String[0]);
+  }
+
   private final PrintStream out;
   @Getter
   private final String label;
+  @Getter
   private final String[] args;
   private int index;
 
   private final Map<String, Object> parsedArguments;
 
-  public CommandContext(InputStream in, PrintStream out, String label, String[] args) {
-    this.in = in;
+  public CommandContext(PrintStream out, String label, String[] args) {
     this.out = out;
     this.label = label;
     this.args = args;
@@ -29,31 +58,27 @@ public class CommandContext {
     this.parsedArguments = new HashMap<>();
   }
 
-  public CommandContext(InputStream in, PrintStream out, String[] command) {
-    this(in, out, command[0], Arrays.copyOfRange(command, 1, command.length));
+  public CommandContext(PrintStream out, String[] command) {
+    this(out, command[0], Arrays.copyOfRange(command, 1, command.length));
   }
 
-  public CommandContext(InputStream in, PrintStream out, String rawCommand) {
-    this(in, out, rawCommand.split(" "));
-  }
-
-  public InputStream in() {
-    return in;
+  public CommandContext(PrintStream out, String rawCommand) {
+    this(out, tokenize(rawCommand));
   }
 
   public PrintStream out() {
     return out;
   }
 
-  public boolean validateArgument(InternalArgument<?> argument) {
-    return argument.isValidInput(args[index]);
-  }
-
-  public boolean hasNextArg() {
+  public boolean hasNext() {
     return index < args.length;
   }
 
-  public String getNextArg() {
+  public String peak() {
+    return args[index];
+  }
+
+  public String next() {
     return args[index++];
   }
 
@@ -67,11 +92,6 @@ public class CommandContext {
 
   public <T> T get(String argumentKey, Class<T> clazz) {
     return clazz.cast(get(argumentKey));
-  }
-
-  @Override
-  public String toString() {
-    return "label=" + label + ", args=" + Arrays.toString(args);
   }
 
 }

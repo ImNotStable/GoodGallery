@@ -1,9 +1,8 @@
 package org.goodgallery.arguments;
 
+import org.goodgallery.command.CommandContext;
 import org.goodgallery.gallery.Album;
 import org.goodgallery.gallery.Gallery;
-
-import java.util.stream.Collectors;
 
 public class AlbumArgument extends AbstractArgument<Album> {
 
@@ -15,27 +14,18 @@ public class AlbumArgument extends AbstractArgument<Album> {
   }
 
   @Override
-  public InternalArgument<Album> toInternal() {
-    return new InternalArgumentImpl<>(
-      name(),
-      arguments().stream().map(Argument::toInternal).collect(Collectors.toSet()),
-      executable()
-    ) {
-      @Override
-      public String getUsageForm() {
-        return "\"album\"";
-      }
+  protected String getUsage() {
+    return "<album>";
+  }
 
-      @Override
-      public boolean isValidInput(String input) {
-        return gallery.hasAlbum(input);
-      }
+  @Override
+  protected boolean isValidInput(CommandContext context) {
+    return gallery.hasAlbum(context.peak());
+  }
 
-      @Override
-      public Album parse(String input) {
-        return gallery.getAlbum(input);
-      }
-    };
+  @Override
+  protected Album parse(CommandContext context) {
+    return gallery.getAlbum(context.next()).orElse(null);
   }
 
 }

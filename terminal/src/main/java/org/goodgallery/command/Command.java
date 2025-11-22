@@ -10,12 +10,17 @@ import java.util.stream.Collectors;
 
 public final class Command {
 
+  /**
+   * Create a builder for a command with the specified name.
+   *
+   * @param command the name of the command to build
+   * @return a new {@link Builder} initialized with the given command name
+   */
   public static Builder builder(String command) {
     return new Builder(command);
   }
 
   private final String command;
-
   private final Set<? extends InternalArgument<?>> arguments;
   private final Consumer<CommandContext> executable;
 
@@ -30,7 +35,7 @@ public final class Command {
   }
 
   public boolean execute(CommandContext context) {
-    if (!context.hasNextArg()) {
+    if (!context.hasNext()) {
       executable.accept(context);
       return true;
     }

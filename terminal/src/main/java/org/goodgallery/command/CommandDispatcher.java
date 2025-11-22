@@ -3,25 +3,25 @@ package org.goodgallery.command;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class CommandDispatcher implements Closeable {
 
   private final InputStream in;
   private final PrintStream out;
-  private final Set<Command> commands;
-  private final Executor thread;
+  private final Map<String, Command> commands;
+  private final ExecutorService thread;
   private boolean isActive;
 
   public CommandDispatcher(InputStream inputStream, PrintStream outputStream) {
     this.in = inputStream;
     this.out = outputStream;
-    this.commands = new HashSet<>();
+    this.commands = new HashMap<>();
     registerHelp();
     this.thread = Executors.newSingleThreadExecutor();
     start();
@@ -32,16 +32,15 @@ public class CommandDispatcher implements Closeable {
   }
 
   public void addCommand(Command command) {
-    commands.add(command);
+    commands.put(command.toString(), command);
   }
 
   private void registerHelp() {
     Command.builder("help")
-      .executes(context -> {
+      .executes(_ -> {
         out.println("Available commands:");
-        for (Command command : commands) {
+        for (Command command : commands.values())
           out.printf(" - %s%n", command.toString());
-        }
       })
       .register(this);
   }
@@ -52,9 +51,9 @@ public class CommandDispatcher implements Closeable {
       Scanner scanner = new Scanner(in);
 
       while (isActive) {
-        out.print("BPG > ");
+        out.print("GoodGallery > ");
         String command = scanner.nextLine();
-        CommandContext context = new CommandContext(in, out, command);
+        CommandContext context = new CommandContext(out, command);
         execute(context);
       }
 
@@ -63,16 +62,14 @@ public class CommandDispatcher implements Closeable {
   }
 
   private boolean execute(CommandContext context) {
-    Optional<Command> optionalCommand = commands.stream()
-      .filter(command -> command.isCommand(context.getLabel()))
-      .findFirst();
+    Command command = commands.get(context.getLabel());
 
-    if (optionalCommand.isEmpty()) {
-      out.print("Unknown command.");
+    if (command == null) {
+      out.println("Unknown command.");
       return false;
     }
 
-    boolean result = optionalCommand.get().execute(context);
+    boolean result = command.execute(context);
 
     if (!result)
       out.println("Command Failed.");
@@ -83,6 +80,15 @@ public class CommandDispatcher implements Closeable {
   @Override
   public void close() {
     isActive = false;
+    thread.shutdown();
+
+    try {
+      if (thread.awaitTermination(5, TimeUnit.SECONDS)) {
+        thread.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      thread.shutdownNow();
+    }
   }
 
 }
