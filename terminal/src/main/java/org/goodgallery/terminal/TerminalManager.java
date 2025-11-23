@@ -1,6 +1,8 @@
-package org.goodgallery;
+package org.goodgallery.terminal;
 
 import org.goodgallery.command.CommandDispatcher;
+import org.goodgallery.command.CommandException;
+import org.goodgallery.terminal.messages.Error;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
@@ -25,6 +27,7 @@ public class TerminalManager extends Thread implements Closeable {
     this.reader = LineReaderBuilder.builder()
       .terminal(terminal)
       .appName("GoodGallery")
+      .parser(new CustomParser())
       .build();
   }
 
@@ -35,9 +38,15 @@ public class TerminalManager extends Thread implements Closeable {
       + "│ Type 'help' to see a list of available commands.                  │" +
       System.lineSeparator()
       + "╰─➤ ";
+
+    TerminalContext context = new TerminalContext(terminal);
     while (isOpen) {
       String input = reader.readLine(prompt);
-      dispatcher.execute(terminal.writer(), input.trim());
+      try {
+        dispatcher.execute(context, input);
+      } catch (CommandException exception) {
+        context.print(new Error(exception));
+      }
     }
   }
 

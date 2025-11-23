@@ -5,6 +5,10 @@ import org.goodgallery.command.Command;
 import org.goodgallery.command.CommandDispatcher;
 import org.goodgallery.gallery.*;
 import org.goodgallery.gallery.properties.Properties;
+import org.goodgallery.terminal.TerminalManager;
+import org.goodgallery.terminal.messages.Error;
+import org.goodgallery.terminal.messages.Output;
+import org.jline.jansi.Ansi;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,7 +25,7 @@ public class Main {
 
   private static final GallerySettings SETTINGS = new GallerySettings()
     .storage(GallerySettings.StorageType.SQLITE)
-    .galleryPath(Paths.get("gallery"));
+    .galleryPath(Path.of("P:\\Projects\\Java\\GoodGallery\\gallery"));
   private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
   private static final CommandDispatcher DISPATCHER = new CommandDispatcher();
   private static final TerminalManager TERMINAL;
@@ -45,32 +48,35 @@ public class Main {
     }
   }
 
-  @SuppressWarnings("resource")
   static void main() {
+    Output error = new Error(new Exception("Test Exception"));
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.writer().printf("Photos (%d):%n", GALLERY.getPhotos().size());
+          StringBuilder sb = new StringBuilder();
+          sb.append("Photos (%d)".formatted(GALLERY.getPhotos().size()));
           for (Photo photo : GALLERY.getPhotos()) {
             Optional<String> name = photo.getName();
             Optional<Path> path = photo.getPath();
 
             if (name.isEmpty() || path.isEmpty()) continue;
 
-            context.writer().printf(" - %s (%s)%n", name.get(), path.get());
+            sb.append(System.lineSeparator())
+              .append(" - %s (%s)".formatted(name.get(), path.get()));
           }
+          context.info(sb.toString());
         })
       )
       .then(Argument.literal("copy")
         .then(Argument.path("path")
           .executes(context -> {
-            Path path = context.get("path", Path.class);
             try {
+              Path path = context.get("path", Path.class);
               GALLERY.copyPhoto(path);
-              context.writer().println("Successfully copied photo");
-            } catch (Exception e) {
-              context.writer().printf("Failed to copy photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.writer());
+              context.customOutput(Ansi.Color.GREEN, "Successfully copied photo");
+            } catch (Exception exception) {
+              context.error("Failed to copy photo");
+              context.exception(exception);
             }
           })
         )
@@ -78,13 +84,13 @@ public class Main {
       .then(Argument.literal("cut")
         .then(Argument.path("path")
           .executes(context -> {
-            Path path = context.get("path", Path.class);
             try {
+              Path path = context.get("path", Path.class);
               GALLERY.cutPhoto(path);
-              context.writer().println("Successfully cut photo");
-            } catch (Exception e) {
-              context.writer().printf("Failed to cut photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.writer());
+              context.customOutput(Ansi.Color.GREEN, "Successfully cut photo");
+            } catch (Exception exception) {
+              context.error("Failed to cut photo");
+              context.exception(exception);
             }
           })
         )
@@ -95,10 +101,10 @@ public class Main {
               Photo photo = context.get("photo", Photo.class);
               try {
                 GALLERY.deletePhoto(photo);
-                context.writer().println("Photo deleted successfully");
-              } catch (IOException e) {
-                context.writer().printf("Failed to delete photo due to \"%s\"%n", e.getMessage());
-                e.printStackTrace(context.writer());
+                context.customOutput(Ansi.Color.GREEN, "Successfully deleted photo");
+              } catch (IOException exception) {
+                context.error("Failed to delete photo");
+                context.exception(exception);
               }
             }
           )
@@ -111,7 +117,7 @@ public class Main {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(photo, Properties.NAME_KEY, newName);
-              context.writer().println("Renamed photo successfully");
+              context.customOutput(Ansi.Color.GREEN, "Renamed photo successfully");
             })
           )
         )
@@ -128,15 +134,15 @@ public class Main {
 
             Optional<File> photoFile = photo.getPath().map(Path::toFile);
             if (photoFile.isEmpty()) {
-              context.writer().println("Photo has no associated file path");
+              context.error("Photo has no associated file path");
               return;
             }
 
             BufferedImage originalImage;
             try {
               originalImage = ImageIO.read(photoFile.get());
-            } catch (IOException e) {
-              context.writer().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
+            } catch (IOException exception) {
+              context.error("Failed to read photo from file due to \"%s\"", exception.getMessage());
               return;
             }
 
@@ -166,7 +172,8 @@ public class Main {
     Command.builder("albums")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.writer().printf("Albums (%d):%n", GALLERY.getAlbums().size());
+          StringBuilder sb = new StringBuilder();
+          sb.append("Albums (%d)".formatted(GALLERY.getAlbums().size()));
 
           for (Album album : GALLERY.getAlbums()) {
             Optional<String> name = album.getName();
@@ -180,10 +187,12 @@ public class Main {
               if (photoName.isEmpty() || photoPath.isEmpty()) return null;
 
               return "  * %s (%s)".formatted(photoName.get(), photoPath.get());
-            }).collect(Collectors.joining("%n"));
+            }).collect(Collectors.joining(System.lineSeparator()));
 
-            context.writer().printf(" - %s%n%s", name.get(), photos);
+            sb.append(System.lineSeparator())
+                .append(" - %s%n%s".formatted(name.get(), photos));
           }
+          context.info(sb.toString());
         })
       )
       .then(Argument.literal("create")
@@ -191,7 +200,7 @@ public class Main {
           .executes(context -> {
             String name = context.get("album", String.class);
             GALLERY.createAlbum(name);
-            context.writer().println("Successfully created album");
+            context.customOutput(Ansi.Color.GREEN, "Successfully created album");
           })
         )
       )
@@ -202,7 +211,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(album, Properties.NAME_KEY, newName);
-              context.writer().println("Renamed photo successfully");
+              context.customOutput(Ansi.Color.GREEN, "Renamed album successfully");
             })
           )
         )
@@ -212,7 +221,7 @@ public class Main {
           .executes(context -> {
             Album album = context.get("album", Album.class);
             GALLERY.deleteAlbum(album);
-            context.writer().println("Successfully deleted album");
+            context.customOutput(Ansi.Color.GREEN, "Successfully deleted album");
           })
         )
       )
@@ -223,7 +232,7 @@ public class Main {
                 Album album = context.get("album", Album.class);
                 Photo photo = context.get("photo", Photo.class);
                 GALLERY.addPhotoToAlbum(photo, album);
-                context.writer().println("Successfully added photo to album");
+                context.customOutput(Ansi.Color.GREEN, "Successfully added photo to album");
               }
             )
           )
@@ -236,7 +245,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               Photo photo = context.get("photo", Photo.class);
               GALLERY.removePhotoFromAlbum(photo, album);
-              context.writer().println("Successfully removed photo from album");
+              context.customOutput(Ansi.Color.GREEN, "Successfully removed photo from album");
             })
           )
         )

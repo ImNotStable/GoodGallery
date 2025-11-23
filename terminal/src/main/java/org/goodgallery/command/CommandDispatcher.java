@@ -1,8 +1,9 @@
 package org.goodgallery.command;
 
+import org.goodgallery.terminal.TerminalContext;
+
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,31 +24,28 @@ public class CommandDispatcher {
     this(System.in, System.out);
   }
 
-  public void addCommand(Command command) {
+  public void register(Command command) {
     commands.put(command.toString(), command);
   }
 
   private void registerHelp() {
-    String title = "Available commands";
     Command.builder("help")
       .executes(context -> {
-        context.writer().println("╭────────────────────╮");
-        context.writer().printf("│ %s │%n", title);
-        for (Command command : commands.values()) {
-          String label = command.toString();
-          context.writer().printf("│ %s%s │%n", label, " ".repeat(Math.max(0, title.length() - label.length())));
-        }
-        context.writer().println("╰────────────────────╯");
+        StringBuilder sb = new StringBuilder();
+        sb.append("Available commands");
+        for (Command command : commands.values())
+          sb.append(System.lineSeparator())
+            .append(command.toString());
+        context.info(sb.toString());
       })
       .register(this);
   }
 
-  public boolean execute(PrintWriter writer, String rawCommand) {
-    CommandContext context = new CommandContext(writer, rawCommand);
-    return execute(context);
+  public boolean execute(TerminalContext terminalContext, String rawCommand) throws CommandException {
+    return execute(new CommandContext(terminalContext, rawCommand));
   }
 
-  private boolean execute(CommandContext context) {
+  private boolean execute(CommandContext context) throws CommandException {
     Command command = commands.get(context.getLabel());
 
     if (command == null) {
@@ -55,7 +53,12 @@ public class CommandDispatcher {
       return false;
     }
 
-    boolean result = command.execute(context);
+    boolean result;
+    try {
+      result = command.execute(context);
+    } catch (Exception exception) {
+      throw new CommandException(exception);
+    }
 
     if (!result)
       out.println("Command Failed.");

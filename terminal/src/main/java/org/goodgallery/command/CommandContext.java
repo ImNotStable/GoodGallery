@@ -1,8 +1,12 @@
 package org.goodgallery.command;
 
 import lombok.Getter;
+import org.goodgallery.terminal.TerminalContext;
+import org.goodgallery.terminal.messages.CustomOutput;
+import org.goodgallery.terminal.messages.Error;
+import org.goodgallery.terminal.messages.Info;
+import org.jline.jansi.Ansi;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 public class CommandContext implements Iterator<String> {
@@ -13,20 +17,13 @@ public class CommandContext implements Iterator<String> {
     tokens.add(rawCommand.split(" ")[0]);
     rawCommand = rawCommand.substring(tokens.getFirst().length()).trim();
     StringBuilder currentToken = new StringBuilder();
-    boolean escapeNext = false;
     boolean inQuotes = false;
 
     for (char c : rawCommand.toCharArray()) {
-      if (escapeNext) {
-        currentToken.append(c);
-        escapeNext = false;
-      }
-      else if (c == '"')
+      if (c == '"')
         inQuotes = !inQuotes;
       else if (inQuotes)
         currentToken.append(c);
-      else if (c == '\\')
-        escapeNext = true;
       else if (Character.isWhitespace(c)) {
         if (!currentToken.isEmpty()) {
           tokens.add(currentToken.toString());
@@ -41,7 +38,8 @@ public class CommandContext implements Iterator<String> {
     return tokens.toArray(new String[0]);
   }
 
-  private final PrintWriter writer;
+  private final TerminalContext terminalContext;
+
   @Getter
   private final String label;
   @Getter
@@ -50,24 +48,49 @@ public class CommandContext implements Iterator<String> {
 
   private final Map<String, Object> parsedArguments;
 
-  public CommandContext(PrintWriter writer, String label, String[] args) {
-    this.writer = writer;
-    this.label = label;
-    this.args = args;
+  public CommandContext(TerminalContext terminalContext, String rawCommand) {
+    this.terminalContext = terminalContext;
+    String[] tokens = tokenize(rawCommand);
+    this.label = tokens[0];
+    this.args = Arrays.copyOfRange(tokens, 1, tokens.length);
     this.index = 0;
     this.parsedArguments = new HashMap<>();
   }
 
-  public CommandContext(PrintWriter writer, String[] command) {
-    this(writer, command[0], Arrays.copyOfRange(command, 1, command.length));
+  public void info(String... messages) {
+    terminalContext.print(new Info(Arrays.asList(messages)));
   }
 
-  public CommandContext(PrintWriter writer, String rawCommand) {
-    this(writer, tokenize(rawCommand));
+  public void info(String message, Object... args) {
+    info(message.formatted(args));
   }
 
-  public PrintWriter writer() {
-    return writer;
+  public void warn(String... messages) {
+    terminalContext.print(new Info(Arrays.asList(messages)));
+  }
+
+  public void warn(String message, Object... args) {
+    warn(message.formatted(args));
+  }
+
+  public void error(String... messages) {
+    terminalContext.print(new Error(messages));
+  }
+
+  public void error(String message, Object... args) {
+    error(message.formatted(args));
+  }
+
+  public void exception(Exception exception) {
+    terminalContext.print(new Error(exception.getMessage()));
+  }
+
+  public void customOutput(Ansi.Color color, String... messages) {
+    terminalContext.print(new CustomOutput(color, Arrays.asList(messages)));
+  }
+
+  public void customOutput(Ansi.Color color, String message, Object... args) {
+    customOutput(color, message.formatted(args));
   }
 
   public boolean hasNext() {
