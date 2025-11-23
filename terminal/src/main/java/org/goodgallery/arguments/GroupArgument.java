@@ -20,7 +20,7 @@ public class GroupArgument extends AbstractArgument<Group> {
 
   @Override
   protected boolean isValidInput(CommandContext context) {
-    return gallery.hasGroup(context.peak());
+    return gallery.hasGroup(context.peek());
   }
 
   @Override

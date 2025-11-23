@@ -15,7 +15,7 @@ public class LiteralArgument extends AbstractArgument<String> {
 
   @Override
   protected boolean isValidInput(CommandContext context) {
-    return name().equalsIgnoreCase(context.peak());
+    return name().equalsIgnoreCase(context.peek());
   }
 
   @Override

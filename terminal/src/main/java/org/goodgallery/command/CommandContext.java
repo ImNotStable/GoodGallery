@@ -74,7 +74,7 @@ public class CommandContext implements Iterator<String> {
     return index < args.length;
   }
 
-  public String peak() {
+  public String peek() {
     return args[index];
   }
 
