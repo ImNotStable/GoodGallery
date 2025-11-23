@@ -4,4 +4,6 @@ dependencies {
   annotationProcessor("org.jetbrains:annotations:26.0.2-1")
   implementation("org.projectlombok:lombok:1.18.42")
   annotationProcessor("org.projectlombok:lombok:1.18.42")
+
+  implementation("org.jline:jline:3.30.0")
 }

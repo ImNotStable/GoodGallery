@@ -2,7 +2,7 @@ package org.goodgallery.command;
 
 import lombok.Getter;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class CommandContext implements Iterator<String> {
@@ -41,7 +41,7 @@ public class CommandContext implements Iterator<String> {
     return tokens.toArray(new String[0]);
   }
 
-  private final PrintStream out;
+  private final PrintWriter writer;
   @Getter
   private final String label;
   @Getter
@@ -50,24 +50,24 @@ public class CommandContext implements Iterator<String> {
 
   private final Map<String, Object> parsedArguments;
 
-  public CommandContext(PrintStream out, String label, String[] args) {
-    this.out = out;
+  public CommandContext(PrintWriter writer, String label, String[] args) {
+    this.writer = writer;
     this.label = label;
     this.args = args;
     this.index = 0;
     this.parsedArguments = new HashMap<>();
   }
 
-  public CommandContext(PrintStream out, String[] command) {
-    this(out, command[0], Arrays.copyOfRange(command, 1, command.length));
+  public CommandContext(PrintWriter writer, String[] command) {
+    this(writer, command[0], Arrays.copyOfRange(command, 1, command.length));
   }
 
-  public CommandContext(PrintStream out, String rawCommand) {
-    this(out, tokenize(rawCommand));
+  public CommandContext(PrintWriter writer, String rawCommand) {
+    this(writer, tokenize(rawCommand));
   }
 
-  public PrintStream out() {
-    return out;
+  public PrintWriter writer() {
+    return writer;
   }
 
   public boolean hasNext() {

@@ -1,30 +1,22 @@
 package org.goodgallery.command;
 
-import java.io.Closeable;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-public class CommandDispatcher implements Closeable {
+public class CommandDispatcher {
 
   private final InputStream in;
   private final PrintStream out;
   private final Map<String, Command> commands;
-  private final ExecutorService thread;
-  private boolean isActive;
 
   public CommandDispatcher(InputStream inputStream, PrintStream outputStream) {
     this.in = inputStream;
     this.out = outputStream;
     this.commands = new HashMap<>();
     registerHelp();
-    this.thread = Executors.newSingleThreadExecutor();
-    start();
   }
 
   public CommandDispatcher() {
@@ -36,29 +28,23 @@ public class CommandDispatcher implements Closeable {
   }
 
   private void registerHelp() {
+    String title = "Available commands";
     Command.builder("help")
-      .executes(_ -> {
-        out.println("Available commands:");
-        for (Command command : commands.values())
-          out.printf(" - %s%n", command.toString());
+      .executes(context -> {
+        context.writer().println("╭────────────────────╮");
+        context.writer().printf("│ %s │%n", title);
+        for (Command command : commands.values()) {
+          String label = command.toString();
+          context.writer().printf("│ %s%s │%n", label, " ".repeat(Math.max(0, title.length() - label.length())));
+        }
+        context.writer().println("╰────────────────────╯");
       })
       .register(this);
   }
 
-  public void start() {
-    isActive = true;
-    thread.execute(() -> {
-      Scanner scanner = new Scanner(in);
-
-      while (isActive) {
-        out.print("GoodGallery > ");
-        String command = scanner.nextLine();
-        CommandContext context = new CommandContext(out, command);
-        execute(context);
-      }
-
-      scanner.close();
-    });
+  public boolean execute(PrintWriter writer, String rawCommand) {
+    CommandContext context = new CommandContext(writer, rawCommand);
+    return execute(context);
   }
 
   private boolean execute(CommandContext context) {
@@ -77,18 +63,12 @@ public class CommandDispatcher implements Closeable {
     return result;
   }
 
-  @Override
-  public void close() {
-    isActive = false;
-    thread.shutdown();
+  public InputStream in() {
+    return in;
+  }
 
-    try {
-      if (thread.awaitTermination(5, TimeUnit.SECONDS)) {
-        thread.shutdownNow();
-      }
-    } catch (InterruptedException e) {
-      thread.shutdownNow();
-    }
+  public PrintStream out() {
+    return out;
   }
 
 }

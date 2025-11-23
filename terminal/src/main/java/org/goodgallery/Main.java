@@ -25,31 +25,39 @@ public class Main {
     .galleryPath(Paths.get("gallery"));
   private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
   private static final CommandDispatcher DISPATCHER = new CommandDispatcher();
+  private static final TerminalManager TERMINAL;
+  private static final Image icon;
 
-  private static Image icon;
-
-  @SuppressWarnings("resource")
-  static void main() {
+  static {
+    try {
+      TERMINAL = new TerminalManager(DISPATCHER);
+      TERMINAL.start();
+    } catch (IOException exception) {
+      throw new RuntimeException("Failed to start JLine Terminal", exception);
+    }
     try {
       URL iconURL = Main.class.getResource("/icon.png");
       if (iconURL == null)
         throw new RuntimeException("Icon resource not found");
       icon = ImageIO.read(iconURL);
     } catch (IOException exception) {
-      throw new RuntimeException(exception);
+      throw new RuntimeException("Failed to access icon resource", exception);
     }
+  }
 
+  @SuppressWarnings("resource")
+  static void main() {
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Photos (%d):%n", GALLERY.getPhotos().size());
+          context.writer().printf("Photos (%d):%n", GALLERY.getPhotos().size());
           for (Photo photo : GALLERY.getPhotos()) {
             Optional<String> name = photo.getName();
             Optional<Path> path = photo.getPath();
 
             if (name.isEmpty() || path.isEmpty()) continue;
 
-            context.out().printf(" - %s (%s)%n", name.get(), path.get());
+            context.writer().printf(" - %s (%s)%n", name.get(), path.get());
           }
         })
       )
@@ -59,10 +67,10 @@ public class Main {
             Path path = context.get("path", Path.class);
             try {
               GALLERY.copyPhoto(path);
-              context.out().println("Successfully copied photo");
+              context.writer().println("Successfully copied photo");
             } catch (Exception e) {
-              context.out().printf("Failed to copy photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.out());
+              context.writer().printf("Failed to copy photo due to \"%s\"%n", e.getMessage());
+              e.printStackTrace(context.writer());
             }
           })
         )
@@ -73,10 +81,10 @@ public class Main {
             Path path = context.get("path", Path.class);
             try {
               GALLERY.cutPhoto(path);
-              context.out().println("Successfully cut photo");
+              context.writer().println("Successfully cut photo");
             } catch (Exception e) {
-              context.out().printf("Failed to cut photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.out());
+              context.writer().printf("Failed to cut photo due to \"%s\"%n", e.getMessage());
+              e.printStackTrace(context.writer());
             }
           })
         )
@@ -87,10 +95,10 @@ public class Main {
               Photo photo = context.get("photo", Photo.class);
               try {
                 GALLERY.deletePhoto(photo);
-                context.out().println("Photo deleted successfully");
+                context.writer().println("Photo deleted successfully");
               } catch (IOException e) {
-                context.out().printf("Failed to delete photo due to \"%s\"%n", e.getMessage());
-                e.printStackTrace(context.out());
+                context.writer().printf("Failed to delete photo due to \"%s\"%n", e.getMessage());
+                e.printStackTrace(context.writer());
               }
             }
           )
@@ -103,7 +111,7 @@ public class Main {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(photo, Properties.NAME_KEY, newName);
-              context.out().println("Renamed photo successfully");
+              context.writer().println("Renamed photo successfully");
             })
           )
         )
@@ -120,7 +128,7 @@ public class Main {
 
             Optional<File> photoFile = photo.getPath().map(Path::toFile);
             if (photoFile.isEmpty()) {
-              context.out().println("Photo has no associated file path");
+              context.writer().println("Photo has no associated file path");
               return;
             }
 
@@ -128,7 +136,7 @@ public class Main {
             try {
               originalImage = ImageIO.read(photoFile.get());
             } catch (IOException e) {
-              context.out().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
+              context.writer().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
               return;
             }
 
@@ -158,7 +166,7 @@ public class Main {
     Command.builder("albums")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Albums (%d):%n", GALLERY.getAlbums().size());
+          context.writer().printf("Albums (%d):%n", GALLERY.getAlbums().size());
 
           for (Album album : GALLERY.getAlbums()) {
             Optional<String> name = album.getName();
@@ -174,7 +182,7 @@ public class Main {
               return "  * %s (%s)".formatted(photoName.get(), photoPath.get());
             }).collect(Collectors.joining("%n"));
 
-            context.out().printf(" - %s%n%s", name.get(), photos);
+            context.writer().printf(" - %s%n%s", name.get(), photos);
           }
         })
       )
@@ -183,7 +191,7 @@ public class Main {
           .executes(context -> {
             String name = context.get("album", String.class);
             GALLERY.createAlbum(name);
-            context.out().println("Successfully created album");
+            context.writer().println("Successfully created album");
           })
         )
       )
@@ -194,7 +202,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(album, Properties.NAME_KEY, newName);
-              context.out().println("Renamed photo successfully");
+              context.writer().println("Renamed photo successfully");
             })
           )
         )
@@ -204,7 +212,7 @@ public class Main {
           .executes(context -> {
             Album album = context.get("album", Album.class);
             GALLERY.deleteAlbum(album);
-            context.out().println("Successfully deleted album");
+            context.writer().println("Successfully deleted album");
           })
         )
       )
@@ -215,7 +223,7 @@ public class Main {
                 Album album = context.get("album", Album.class);
                 Photo photo = context.get("photo", Photo.class);
                 GALLERY.addPhotoToAlbum(photo, album);
-                context.out().println("Successfully added photo to album");
+                context.writer().println("Successfully added photo to album");
               }
             )
           )
@@ -228,7 +236,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               Photo photo = context.get("photo", Photo.class);
               GALLERY.removePhotoFromAlbum(photo, album);
-              context.out().println("Successfully removed photo from album");
+              context.writer().println("Successfully removed photo from album");
             })
           )
         )
