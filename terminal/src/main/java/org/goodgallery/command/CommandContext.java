@@ -58,7 +58,7 @@ public class CommandContext implements Iterator<String> {
   }
 
   public void info(String... messages) {
-    terminalContext.print(new Info(Arrays.asList(messages)));
+    terminalContext.print(new Info(messages));
   }
 
   public void info(String message, Object... args) {
@@ -66,7 +66,7 @@ public class CommandContext implements Iterator<String> {
   }
 
   public void warn(String... messages) {
-    terminalContext.print(new Info(Arrays.asList(messages)));
+    terminalContext.print(new Info(messages));
   }
 
   public void warn(String message, Object... args) {
@@ -86,7 +86,7 @@ public class CommandContext implements Iterator<String> {
   }
 
   public void customOutput(Ansi.Color color, String... messages) {
-    terminalContext.print(new CustomOutput(color, Arrays.asList(messages)));
+    terminalContext.print(new CustomOutput(color, messages));
   }
 
   public void customOutput(Ansi.Color color, String message, Object... args) {

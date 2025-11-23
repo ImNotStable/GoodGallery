@@ -10,6 +10,7 @@ import org.jline.terminal.TerminalBuilder;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class TerminalManager extends Thread implements Closeable {
 
@@ -28,7 +29,12 @@ public class TerminalManager extends Thread implements Closeable {
       .terminal(terminal)
       .appName("GoodGallery")
       .parser(new CustomParser())
+      .variable(LineReader.HISTORY_FILE, Path.of("history.txt"))
       .build();
+
+    //KeyMap<Binding> keyMap = reader.getKeyMaps().get(LineReader.MAIN);
+    //keyMap.bind(new Reference(LineReader.UP_HISTORY), KeyMap.key(terminal, InfoCmp.Capability.up));
+    //keyMap.bind(new Reference(LineReader.DOWN_HISTORY), KeyMap.ctrl('N'));
   }
 
   @Override
