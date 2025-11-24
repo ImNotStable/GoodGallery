@@ -2,7 +2,6 @@ package org.goodgallery.terminal.output;
 
 import org.jline.jansi.Ansi;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 public class CustomOutput extends AbstractOutput {
@@ -14,17 +13,9 @@ public class CustomOutput extends AbstractOutput {
     this.color = color;
   }
 
-  public CustomOutput(Ansi.Color color, String title, String... lines) {
-    this(color, title, Arrays.asList(lines));
-  }
-
   public CustomOutput(Ansi.Color color, Collection<String> lines) {
     super(lines);
     this.color = color;
-  }
-
-  public CustomOutput(Ansi.Color color, String... lines) {
-    this(color, Arrays.asList(lines));
   }
 
   @Override
