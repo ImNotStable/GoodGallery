@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-abstract class AbstractGalleryData implements GalleryData {
+public abstract class AbstractGalleryData implements GalleryData {
 
   protected final Path path;
 
@@ -25,10 +25,9 @@ abstract class AbstractGalleryData implements GalleryData {
     this.photosByUUID = new ConcurrentHashMap<>();
     this.albumsByUUID = new ConcurrentHashMap<>();
     this.groupsByUUID = new ConcurrentHashMap<>();
-    load();
   }
 
-  protected abstract void load();
+  public abstract void load();
 
   protected abstract void insert(GalleryItem galleryItem);
 

@@ -1,9 +1,8 @@
 package org.goodgallery.command;
 
 import lombok.Getter;
+import org.goodgallery.terminal.Output;
 import org.goodgallery.terminal.TerminalContext;
-import org.goodgallery.terminal.output.*;
-import org.goodgallery.terminal.output.Error;
 import org.jline.jansi.Ansi;
 
 import java.util.*;
@@ -56,58 +55,6 @@ public class CommandContext implements Iterator<String> {
     this.parsedArguments = new HashMap<>();
   }
 
-  public void info(Collection<String> messages) {
-    terminalContext.print(new Info(messages));
-  }
-
-  public void info(String... messages) {
-    info(Arrays.asList(messages));
-  }
-
-  public void info(String message, Object... args) {
-    info(message.formatted(args));
-  }
-
-  public void warn(Collection<String> messages) {
-    terminalContext.print(new Warning(messages));
-  }
-
-  public void warn(String... messages) {
-    warn(Arrays.asList(messages));
-  }
-
-  public void warn(String message, Object... args) {
-    warn(message.formatted(args));
-  }
-
-  public void error(Collection<String> messages) {
-    terminalContext.print(new Error(messages));
-  }
-
-  public void error(String... messages) {
-    error(Arrays.asList(messages));
-  }
-
-  public void error(String message, Object... args) {
-    error(message.formatted(args));
-  }
-
-  public void exception(Exception exception) {
-    terminalContext.print(new Error(exception));
-  }
-
-  public void customOutput(Ansi.Color color, String... messages) {
-    terminalContext.print(new CustomOutput(color, Arrays.asList(messages)));
-  }
-
-  public void customOutput(Ansi.Color color, String message, Object... args) {
-    customOutput(color, message.formatted(args));
-  }
-
-  public void print(Output output) {
-    terminalContext.print(output);
-  }
-
   public boolean hasNext() {
     return index < args.length;
   }
@@ -130,6 +77,66 @@ public class CommandContext implements Iterator<String> {
 
   public <T> T get(String argumentKey, Class<T> clazz) {
     return clazz.cast(get(argumentKey));
+  }
+
+  public void print(Output output) {
+    terminalContext.print(output);
+  }
+
+  public void info(String title, Collection<String> messages) {
+    print(Output.info(title, messages));
+  }
+
+  public void info(Collection<String> messages) {
+    print(Output.info(messages));
+  }
+
+  public void info(String... messages) {
+    print(Output.info(messages));
+  }
+
+  public void warn(String title, Collection<String> messages) {
+    print(Output.warn(title, messages));
+  }
+
+  public void warn(Collection<String> messages) {
+    print(Output.warn(messages));
+  }
+
+  public void warn(String... messages) {
+    print(Output.warn(messages));
+  }
+
+  public void error(String title, Collection<String> messages) {
+    print(Output.error(title, messages));
+  }
+
+  public void error(Collection<String> messages) {
+    print(Output.error(messages));
+  }
+
+  public void error(String... messages) {
+    print(Output.error(messages));
+  }
+
+  public void exception(String title, Exception exception) {
+    print(Output.exception(title, exception));
+  }
+
+  public void exception(Exception exception) {
+    print(Output.exception(exception));
+  }
+
+  public void output(Ansi.Color color, String title, Collection<String> messages) {
+    print(new Output(color, title, messages));
+  }
+
+  public void output(Ansi.Color color, Collection<String> messages) {
+    print(new Output(color, "", messages));
+  }
+
+  public void output(Ansi.Color color, String... messages) {
+    print(new Output(color, "", Arrays.asList(messages)));
   }
 
 }

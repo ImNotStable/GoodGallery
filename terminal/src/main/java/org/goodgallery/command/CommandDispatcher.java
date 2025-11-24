@@ -4,8 +4,6 @@ import org.goodgallery.terminal.TerminalContext;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,12 +30,7 @@ public class CommandDispatcher {
 
   private void registerHelp() {
     Command.builder("help")
-      .executes(context -> {
-        Collection<String> messages = new ArrayList<>();
-        messages.add("Available commands");
-        messages.addAll(commands.values().stream().map(Command::toString).toList());
-        context.info(messages);
-      })
+      .executes(context -> context.info("Available commands", commands.values().stream().map(Command::toString).toList()))
       .register(this);
   }
 
@@ -49,7 +42,7 @@ public class CommandDispatcher {
     Command command = commands.get(context.getLabel());
 
     if (command == null) {
-      out.println("Unknown command.");
+      context.error("Unknown command.");
       return false;
     }
 
@@ -61,7 +54,7 @@ public class CommandDispatcher {
     }
 
     if (!result)
-      out.println("Command Failed.");
+      context.error("Command failed.");
 
     return result;
   }
