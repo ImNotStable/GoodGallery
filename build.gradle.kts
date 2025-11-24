@@ -54,6 +54,7 @@ subprojects {
       minimize()
     }
     withType<JavaExec> {
+      systemProperty("file.encoding", "UTF-8")
       jvmArgs("--enable-native-access=ALL-UNNAMED")
     }
     test {

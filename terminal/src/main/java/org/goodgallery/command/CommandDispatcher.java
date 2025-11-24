@@ -4,6 +4,8 @@ import org.goodgallery.terminal.TerminalContext;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,12 +33,10 @@ public class CommandDispatcher {
   private void registerHelp() {
     Command.builder("help")
       .executes(context -> {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Available commands");
-        for (Command command : commands.values())
-          sb.append(System.lineSeparator())
-            .append(command.toString());
-        context.info(sb.toString());
+        Collection<String> messages = new ArrayList<>();
+        messages.add("Available commands");
+        messages.addAll(commands.values().stream().map(Command::toString).toList());
+        context.info(messages);
       })
       .register(this);
   }

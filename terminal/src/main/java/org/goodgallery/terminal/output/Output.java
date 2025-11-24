@@ -1,4 +1,4 @@
-package org.goodgallery.terminal.messages;
+package org.goodgallery.terminal.output;
 
 public interface Output {
 

@@ -1,4 +1,4 @@
-package org.goodgallery.terminal.messages;
+package org.goodgallery.terminal.output;
 
 import org.jline.jansi.Ansi;
 
@@ -8,6 +8,15 @@ import java.util.Collection;
 public class CustomOutput extends AbstractOutput {
 
   private final Ansi.Color color;
+
+  public CustomOutput(Ansi.Color color, String title, Collection<String> lines) {
+    super(title, lines);
+    this.color = color;
+  }
+
+  public CustomOutput(Ansi.Color color, String title, String... lines) {
+    this(color, title, Arrays.asList(lines));
+  }
 
   public CustomOutput(Ansi.Color color, Collection<String> lines) {
     super(lines);

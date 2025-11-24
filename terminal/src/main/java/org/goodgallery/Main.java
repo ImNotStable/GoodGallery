@@ -6,8 +6,6 @@ import org.goodgallery.command.CommandDispatcher;
 import org.goodgallery.gallery.*;
 import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.terminal.TerminalManager;
-import org.goodgallery.terminal.messages.Error;
-import org.goodgallery.terminal.messages.Output;
 import org.jline.jansi.Ansi;
 
 import javax.imageio.ImageIO;
@@ -49,7 +47,6 @@ public class Main {
   }
 
   static void main() {
-    Output error = new Error(new Exception("Test Exception"));
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {

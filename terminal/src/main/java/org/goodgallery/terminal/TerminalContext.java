@@ -1,6 +1,6 @@
 package org.goodgallery.terminal;
 
-import org.goodgallery.terminal.messages.Output;
+import org.goodgallery.terminal.output.Output;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 

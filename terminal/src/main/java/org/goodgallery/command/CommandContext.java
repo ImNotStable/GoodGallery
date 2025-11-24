@@ -2,9 +2,8 @@ package org.goodgallery.command;
 
 import lombok.Getter;
 import org.goodgallery.terminal.TerminalContext;
-import org.goodgallery.terminal.messages.CustomOutput;
-import org.goodgallery.terminal.messages.Error;
-import org.goodgallery.terminal.messages.Info;
+import org.goodgallery.terminal.output.*;
+import org.goodgallery.terminal.output.Error;
 import org.jline.jansi.Ansi;
 
 import java.util.*;
@@ -57,24 +56,36 @@ public class CommandContext implements Iterator<String> {
     this.parsedArguments = new HashMap<>();
   }
 
-  public void info(String... messages) {
+  public void info(Collection<String> messages) {
     terminalContext.print(new Info(messages));
+  }
+
+  public void info(String... messages) {
+    info(Arrays.asList(messages));
   }
 
   public void info(String message, Object... args) {
     info(message.formatted(args));
   }
 
+  public void warn(Collection<String> messages) {
+    terminalContext.print(new Warning(messages));
+  }
+
   public void warn(String... messages) {
-    terminalContext.print(new Info(messages));
+    warn(Arrays.asList(messages));
   }
 
   public void warn(String message, Object... args) {
     warn(message.formatted(args));
   }
 
-  public void error(String... messages) {
+  public void error(Collection<String> messages) {
     terminalContext.print(new Error(messages));
+  }
+
+  public void error(String... messages) {
+    error(Arrays.asList(messages));
   }
 
   public void error(String message, Object... args) {
@@ -82,15 +93,19 @@ public class CommandContext implements Iterator<String> {
   }
 
   public void exception(Exception exception) {
-    terminalContext.print(new Error(exception.getMessage()));
+    terminalContext.print(new Error(exception));
   }
 
   public void customOutput(Ansi.Color color, String... messages) {
-    terminalContext.print(new CustomOutput(color, messages));
+    terminalContext.print(new CustomOutput(color, Arrays.asList(messages)));
   }
 
   public void customOutput(Ansi.Color color, String message, Object... args) {
     customOutput(color, message.formatted(args));
+  }
+
+  public void print(Output output) {
+    terminalContext.print(output);
   }
 
   public boolean hasNext() {

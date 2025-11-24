@@ -1,18 +1,13 @@
-package org.goodgallery.terminal.messages;
+package org.goodgallery.terminal.output;
 
 import org.jline.jansi.Ansi;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 public class Info extends AbstractOutput {
 
   public Info(Collection<String> lines) {
     super(lines);
-  }
-
-  public Info(String... lines) {
-    super(Arrays.asList(lines));
   }
 
   @Override
