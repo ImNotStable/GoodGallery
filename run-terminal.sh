@@ -1,0 +1,1 @@
+java --enable-native-access=ALL-UNNAMED -jar /home/jere/Development/Stem/GoodGallery/build/libs/GoodGallery-0.0.1-terminal.jar

@@ -9,7 +9,8 @@ dependencies {
   implementation("org.projectlombok:lombok:1.18.42")
   annotationProcessor("org.projectlombok:lombok:1.18.42")
 
-  implementation("org.jline:jline:3.30.2")
+  implementation("org.jline:jline:3.30.6")
+  implementation("org.jline:jline-terminal-ffm:3.30.6")
 }
 
 application {

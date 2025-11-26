@@ -51,7 +51,6 @@ subprojects {
       }
 
       mergeServiceFiles()
-      minimize()
     }
     withType<JavaExec> {
       systemProperty("file.encoding", "UTF-8")
