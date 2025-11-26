@@ -43,8 +43,19 @@ subprojects {
       archiveClassifier.set(project.name)
       archiveVersion.set("${rootProject.version}")
       destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
+
+      manifest {
+        attributes(
+          "Main-Class" to "org.goodgallery.Main"
+        )
+      }
+
       mergeServiceFiles()
       minimize()
+    }
+    withType<JavaExec> {
+      systemProperty("file.encoding", "UTF-8")
+      jvmArgs("--enable-native-access=ALL-UNNAMED")
     }
     test {
       useJUnitPlatform()

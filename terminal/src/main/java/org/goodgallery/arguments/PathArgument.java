@@ -19,7 +19,7 @@ public class PathArgument extends AbstractArgument<Path> {
   @Override
   protected boolean isValidInput(CommandContext context) {
     try {
-      context.next();
+      context.peek();
       return true;
     } catch (InvalidPathException _) {
       return false;

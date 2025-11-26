@@ -4,11 +4,13 @@ public final class GalleryInstance {
 
   private static Gallery GALLERY = null;
 
-  public static synchronized Gallery init(GallerySettings properties) {
+  public static synchronized Gallery init(GallerySettings settings) {
     if (GALLERY != null)
       throw new IllegalStateException("Gallery instance has already been initialized");
     try {
-      return GALLERY = new Gallery(properties);
+      GALLERY = new Gallery(settings);
+      GALLERY.load();
+      return GALLERY;
     } catch (Exception exception) {
       throw new RuntimeException("Failed to initialize Gallery", exception);
     }

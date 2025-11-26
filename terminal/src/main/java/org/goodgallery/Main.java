@@ -5,6 +5,8 @@ import org.goodgallery.command.Command;
 import org.goodgallery.command.CommandDispatcher;
 import org.goodgallery.gallery.*;
 import org.goodgallery.gallery.properties.Properties;
+import org.goodgallery.terminal.TerminalManager;
+import org.jline.jansi.Ansi;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,55 +16,64 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Main {
 
   private static final GallerySettings SETTINGS = new GallerySettings()
     .storage(GallerySettings.StorageType.SQLITE)
-    .galleryPath(Paths.get("gallery"));
+    .galleryPath(Path.of("P:\\Projects\\Java\\GoodGallery\\gallery"));
   private static final Gallery GALLERY = GalleryInstance.init(SETTINGS);
   private static final CommandDispatcher DISPATCHER = new CommandDispatcher();
+  private static final TerminalManager TERMINAL;
+  private static final Image icon;
 
-  private static Image icon;
-
-  @SuppressWarnings("resource")
-  static void main() {
+  static {
+    try {
+      TERMINAL = new TerminalManager(DISPATCHER);
+      TERMINAL.start();
+    } catch (IOException exception) {
+      throw new RuntimeException("Failed to start JLine Terminal", exception);
+    }
     try {
       URL iconURL = Main.class.getResource("/icon.png");
       if (iconURL == null)
         throw new RuntimeException("Icon resource not found");
       icon = ImageIO.read(iconURL);
     } catch (IOException exception) {
-      throw new RuntimeException(exception);
+      throw new RuntimeException("Failed to access icon resource", exception);
     }
+  }
 
+  static void main() {
     Command.builder("photos")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Photos (%d):%n", GALLERY.getPhotos().size());
-          for (Photo photo : GALLERY.getPhotos()) {
+          Collection<String> message = new ArrayList<>();
+          message.add("Photos (%d)".formatted(GALLERY.getPhotos().size()));
+          message.addAll(GALLERY.getPhotos().stream().map(photo -> {
             Optional<String> name = photo.getName();
             Optional<Path> path = photo.getPath();
 
-            if (name.isEmpty() || path.isEmpty()) continue;
+            if (name.isEmpty() || path.isEmpty()) return null;
 
-            context.out().printf(" - %s (%s)%n", name.get(), path.get());
-          }
+            return " %s (%s)".formatted(name.get(), path.get());
+          }).filter(Objects::nonNull).toList());
+          context.info(message);
         })
       )
       .then(Argument.literal("copy")
         .then(Argument.path("path")
           .executes(context -> {
-            Path path = context.get("path", Path.class);
             try {
+              Path path = context.get("path", Path.class);
               GALLERY.copyPhoto(path);
-              context.out().println("Successfully copied photo");
-            } catch (Exception e) {
-              context.out().printf("Failed to copy photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.out());
+              context.output(Ansi.Color.GREEN, "Successfully copied photo");
+            } catch (Exception exception) {
+              context.exception("Failed to copy photo", exception);
             }
           })
         )
@@ -70,13 +81,12 @@ public class Main {
       .then(Argument.literal("cut")
         .then(Argument.path("path")
           .executes(context -> {
-            Path path = context.get("path", Path.class);
             try {
+              Path path = context.get("path", Path.class);
               GALLERY.cutPhoto(path);
-              context.out().println("Successfully cut photo");
-            } catch (Exception e) {
-              context.out().printf("Failed to cut photo due to \"%s\"%n", e.getMessage());
-              e.printStackTrace(context.out());
+              context.output(Ansi.Color.GREEN, "Successfully cut photo");
+            } catch (Exception exception) {
+              context.exception("Failed to cut photo", exception);
             }
           })
         )
@@ -84,13 +94,12 @@ public class Main {
       .then(Argument.literal("delete")
         .then(Argument.photo("photo")
           .executes(context -> {
-              Photo photo = context.get("photo", Photo.class);
               try {
+                Photo photo = context.get("photo", Photo.class);
                 GALLERY.deletePhoto(photo);
-                context.out().println("Photo deleted successfully");
-              } catch (IOException e) {
-                context.out().printf("Failed to delete photo due to \"%s\"%n", e.getMessage());
-                e.printStackTrace(context.out());
+                context.output(Ansi.Color.GREEN, "Successfully deleted photo");
+              } catch (IOException exception) {
+                context.exception("Failed to delete photo", exception);
               }
             }
           )
@@ -103,7 +112,7 @@ public class Main {
               Photo photo = context.get("photo", Photo.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(photo, Properties.NAME_KEY, newName);
-              context.out().println("Renamed photo successfully");
+              context.output(Ansi.Color.GREEN, "Renamed photo successfully");
             })
           )
         )
@@ -120,15 +129,15 @@ public class Main {
 
             Optional<File> photoFile = photo.getPath().map(Path::toFile);
             if (photoFile.isEmpty()) {
-              context.out().println("Photo has no associated file path");
+              context.error("Photo has no associated file path");
               return;
             }
 
             BufferedImage originalImage;
             try {
               originalImage = ImageIO.read(photoFile.get());
-            } catch (IOException e) {
-              context.out().printf("Failed to read photo due to \"%s\"%n", e.getMessage());
+            } catch (IOException exception) {
+              context.exception("Failed to load image", exception);
               return;
             }
 
@@ -158,24 +167,30 @@ public class Main {
     Command.builder("albums")
       .then(Argument.literal("list")
         .executes(context -> {
-          context.out().printf("Albums (%d):%n", GALLERY.getAlbums().size());
-
-          for (Album album : GALLERY.getAlbums()) {
+          Collection<String> message = new ArrayList<>();
+          message.add("Albums (%d)".formatted(GALLERY.getAlbums().size()));
+          GALLERY.getAlbums().stream().map(album -> {
             Optional<String> name = album.getName();
+            if (name.isEmpty()) return null;
+            Collection<String> subMessage = new ArrayList<>();
+            subMessage.add(" %s".formatted(name.get()));
+            subMessage.addAll(
+            album.getPhotos().stream()
+              .map(photo -> {
+                Optional<String> photoName = photo.getName();
+                Optional<Path> photoPath = photo.getPath();
 
-            if (name.isEmpty()) continue;
+                if (photoName.isEmpty() || photoPath.isEmpty()) return null;
 
-            String photos = album.getPhotos().stream().map(photo -> {
-              Optional<String> photoName = photo.getName();
-              Optional<Path> photoPath = photo.getPath();
+                return "  %s (%s)".formatted(photoName.get(), photoPath.get());
+              })
+              .filter(Objects::nonNull)
+              .toList());
 
-              if (photoName.isEmpty() || photoPath.isEmpty()) return null;
+            return subMessage;
+          }).filter(Objects::nonNull).forEach(message::addAll);
 
-              return "  * %s (%s)".formatted(photoName.get(), photoPath.get());
-            }).collect(Collectors.joining("%n"));
-
-            context.out().printf(" - %s%n%s", name.get(), photos);
-          }
+          context.info(message);
         })
       )
       .then(Argument.literal("create")
@@ -183,7 +198,7 @@ public class Main {
           .executes(context -> {
             String name = context.get("album", String.class);
             GALLERY.createAlbum(name);
-            context.out().println("Successfully created album");
+            context.output(Ansi.Color.GREEN, "Successfully created album");
           })
         )
       )
@@ -194,7 +209,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               String newName = context.get("name", String.class);
               GALLERY.updateProperty(album, Properties.NAME_KEY, newName);
-              context.out().println("Renamed photo successfully");
+              context.output(Ansi.Color.GREEN, "Renamed album successfully");
             })
           )
         )
@@ -204,7 +219,7 @@ public class Main {
           .executes(context -> {
             Album album = context.get("album", Album.class);
             GALLERY.deleteAlbum(album);
-            context.out().println("Successfully deleted album");
+            context.output(Ansi.Color.GREEN, "Successfully deleted album");
           })
         )
       )
@@ -215,7 +230,7 @@ public class Main {
                 Album album = context.get("album", Album.class);
                 Photo photo = context.get("photo", Photo.class);
                 GALLERY.addPhotoToAlbum(photo, album);
-                context.out().println("Successfully added photo to album");
+                context.output(Ansi.Color.GREEN, "Successfully added photo to album");
               }
             )
           )
@@ -228,7 +243,7 @@ public class Main {
               Album album = context.get("album", Album.class);
               Photo photo = context.get("photo", Photo.class);
               GALLERY.removePhotoFromAlbum(photo, album);
-              context.out().println("Successfully removed photo from album");
+              context.output(Ansi.Color.GREEN, "Successfully removed photo from album");
             })
           )
         )

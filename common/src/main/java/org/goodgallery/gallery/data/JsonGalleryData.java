@@ -81,7 +81,7 @@ public final class JsonGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  protected synchronized void load() {
+  public synchronized void load() {
     loadSection("photos", Photo::new, photosByUUID);
     loadSection("albums", Album::new, albumsByUUID);
     loadSection("groups", Group::new, groupsByUUID);

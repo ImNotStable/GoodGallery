@@ -20,7 +20,7 @@ public class AlbumArgument extends AbstractArgument<Album> {
 
   @Override
   protected boolean isValidInput(CommandContext context) {
-    return gallery.hasAlbum(context.peak());
+    return gallery.hasAlbum(context.peek());
   }
 
   @Override

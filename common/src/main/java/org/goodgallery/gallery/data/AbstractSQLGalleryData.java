@@ -72,7 +72,7 @@ abstract class AbstractSQLGalleryData extends AbstractGalleryData {
   }
 
   @Override
-  protected synchronized void load() {
+  public synchronized void load() {
     createConnectionWithStatement((_, statement) -> {
       try {
         statement.execute("CREATE TABLE IF NOT EXISTS gallery_items(unique_id BINARY(16) PRIMARY KEY, item_type VARCHAR(8));");

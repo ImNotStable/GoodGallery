@@ -1,6 +1,7 @@
 package org.goodgallery.gallery;
 
 import lombok.Getter;
+import org.goodgallery.gallery.data.AbstractGalleryData;
 import org.goodgallery.gallery.data.GalleryData;
 import org.goodgallery.gallery.properties.Properties;
 import org.goodgallery.gallery.properties.PropertiesImpl;
@@ -31,6 +32,10 @@ public final class Gallery {
     if (!Files.isDirectory(path))
       Files.createDirectories(path);
     this.galleryData = properties.storage(path);
+  }
+
+  void load() {
+    ((AbstractGalleryData) galleryData).load();
   }
 
   public Collection<Group> getGroups() {

@@ -67,7 +67,7 @@ public final class Command {
     }
 
     public void register(CommandDispatcher dispatcher) {
-      dispatcher.addCommand(build());
+      dispatcher.register(build());
     }
 
     @Override
