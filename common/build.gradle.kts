@@ -1,8 +1,8 @@
 dependencies {
   implementation("org.jetbrains:annotations:26.1.0")
   annotationProcessor("org.jetbrains:annotations:26.1.0")
-  implementation("org.projectlombok:lombok:1.18.44")
-  annotationProcessor("org.projectlombok:lombok:1.18.44")
+  implementation("org.projectlombok:lombok:1.18.46")
+  annotationProcessor("org.projectlombok:lombok:1.18.46")
 
   implementation("org.xerial:sqlite-jdbc:3.53.0.0")
   implementation("com.h2database:h2:2.4.240")
